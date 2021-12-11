@@ -31,3 +31,6 @@ parse-display = "0.5.3"
 # regex = "1.5.4"
 tap = "1.0.1"
 # thiserror = "1.0.30"
+
+[[bin]]
+name = "aoc2020"

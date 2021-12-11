@@ -36,7 +36,7 @@ target/release/%: .cargoinstalled Cargo.toml Cargo.lock src/lib.rs $(shell find 
 %_bench.md: target/release/%
 > env AOC_NO_OUTPUT=1 hyperfine --export-markdown $@ --warmup 10 --runs 50 --parameter-scan day 1 25 --command-name 'day {day}' './$< {day}'
 
-README.md: README.tpl.md
+README.md: README.tpl.md aoc2020_bench.md
 > m4 $< > $@
 > markdown-table-formatter $@
 
