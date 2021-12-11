@@ -153,25 +153,7 @@ pub trait Solution {
         parse_time: Duration,
     ) -> PuzzleSolution<Self::Output>;
 
-    fn solve() -> PuzzleSolution<Box<dyn Display>>
-    where
-        Self::Output: Display + 'static,
-    {
-        let input = Self::puzzle_input();
-        let start = Instant::now();
-        let input = Self::parse_input(input);
-        let parse_time = start.elapsed();
-        let solution = Self::run(input, parse_time);
-        PuzzleSolution {
-            part1: Box::new(solution.part1),
-            part2: Box::new(solution.part2),
-            parse_time: solution.parse_time,
-            part1_time: solution.part1_time,
-            part2_time: solution.part2_time,
-        }
-    }
-
-    fn solve_t() -> PuzzleSolution<Self::Output> {
+    fn solve() -> PuzzleSolution<Self::Output> {
         let input = Self::puzzle_input();
         let start = Instant::now();
         let input = Self::parse_input(input);
@@ -202,27 +184,23 @@ pub struct ResultLine {
 }
 
 impl ResultLine {
-    pub fn solution<T>(day: u8, part: u8, duration: Duration, solution: T) -> Self
+    pub fn solution<T>(part: u8, duration: Duration, solution: T) -> Self
     where
         T: Display + 'static,
     {
-        Self::new(
-            format!("Day {:02} Part {}", day, part),
-            duration,
-            Some(Box::new(solution)),
-        )
+        Self::new(format!("Part {}", part), duration, Some(Box::new(solution)))
     }
 
-    pub fn note<T>(day: u8, note: &T, duration: Duration) -> Self
+    pub fn note<T>(note: &T, duration: Duration) -> Self
     where
         T: Display + ?Sized,
     {
-        Self::new(format!("Day {:02} {}", day, note), duration, None)
+        Self::new(note.to_string(), duration, None)
     }
 
     fn new(prefix: String, duration: Duration, solution: Option<Box<dyn Display>>) -> Self {
         Self {
-            prefix: prefix.into(),
+            prefix,
             duration,
             solution,
         }
@@ -341,29 +319,24 @@ macro_rules! aoc_main {
             ::std::env::args()
                 .skip(1)
                 .flat_map(|s| s.parse::<u8>())
-                .flat_map(|day| match day {
+                .for_each(|day| match day {
                     $(
                         $day => {
-                            let solution = $md::Solver::solve_t();
+                            let solution = $md::Solver::solve();
                             let day_time = solution.parse_time + solution.part1_time + solution.part2_time;
                             total_time = total_time + day_time;
 
-                            if suppress_output {
-                                vec![]
-                            } else {
-                                vec![
-                                    $crate::ResultLine::note(day, "Parsing", solution.parse_time),
-                                    $crate::ResultLine::solution(day, 1, solution.part1_time, solution.part1),
-                                    $crate::ResultLine::solution(day, 1, solution.part2_time, solution.part2),
-                                    $crate::ResultLine::note(day, "Total", day_time),
-                                ]
+                            if !suppress_output {
+                                println!("Day {:02}", day);
+                                println!("  - {}", $crate::ResultLine::note("Parsing", solution.parse_time));
+                                println!("  - {}", $crate::ResultLine::solution(1, solution.part1_time, solution.part1));
+                                println!("  - {}", $crate::ResultLine::solution(1, solution.part2_time, solution.part2));
+                                println!("  - {}", $crate::ResultLine::note("Total", day_time));
+                                println!();
                             }
                         }
                     ),+,
                     x => unimplemented!("Day {} is not yet implemented", x),
-                })
-                .for_each(|line| {
-                    println!("{}", line);
                 });
 
                 if !suppress_output {
