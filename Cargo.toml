@@ -1,0 +1,33 @@
+[package]
+name = "aoc"
+version = "0.1.0"
+authors = ["Paul Horn <dev@knutwalker.engineer>"]
+description = "Advent of Code solutions for @knutwalker"
+edition = "2021"
+license = "MIT"
+publish = false
+default-run = "aoc2021"
+
+[dependencies]
+# bit-set = "0.5.2"
+# chrono = "0.4.19"
+# const-combinations = "2.0.3"
+# const_format = "0.2.22"
+derive_more = { version = "0.99.17", features = ["deref", "deref_mut", "add"], default-features = false }
+disjoint-sets = "0.4.2"
+# either = "1.6.1"
+# eyre = "0.6.5"
+# fancy-regex = "0.7.1"
+# fastrand = "1.5.0"
+fxhash = "0.2.1"
+humantime = "2.1.0"
+# im = "15.0.0"
+# itertools = "0.10.1"
+# num = "0.4.0"
+num_enum = "0.5.4"
+owo-colors = { version = "3.1.1", features = ["supports-colors"] }
+# once_cell = "1.8.0"
+parse-display = "0.5.3"
+# regex = "1.5.4"
+tap = "1.0.1"
+# thiserror = "1.0.30"
