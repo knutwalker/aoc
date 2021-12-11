@@ -34,3 +34,6 @@ tap = "1.0.1"
 
 [[bin]]
 name = "aoc2020"
+
+[[bin]]
+name = "aoc2021"
