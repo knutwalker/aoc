@@ -13,10 +13,9 @@ fn part1(octo: &mut Octo) -> usize {
 }
 
 fn part2(octo: &mut Octo) -> usize {
-    (0..usize::MAX)
+    (101..usize::MAX)
         .find(|round| octo.flash() == SIZE * SIZE)
         .unwrap()
-        + 101
 }
 
 const SIZE: usize = 10;
@@ -26,76 +25,43 @@ pub struct Octo([[u8; SIZE]; SIZE]);
 
 impl Octo {
     fn flash(&mut self) -> usize {
-        for xs in &mut self.0 {
-            for o in xs {
-                *o += 1;
-            }
-        }
+        fn iterate(map: &mut [[u8; SIZE]; SIZE], flashed: &mut usize, row: usize, col: usize) {
+            map[row][col] = 0;
+            *flashed += 1;
 
-        loop {
-            let mut is_flashing = false;
-            for row in 0..SIZE {
-                for col in 0..SIZE {
-                    if self.0[row][col] == 10 {
-                        is_flashing = true;
-                        // this one goes to 11
-                        self.0[row][col] = 11;
-                        self.adjacent(row, col, |nb| {
-                            if *nb < 10 {
-                                *nb += 1;
-                            }
-                        });
-                    }
+            for (r, c) in [
+                (row.wrapping_sub(1), col.wrapping_sub(1)),
+                (row.wrapping_sub(1), col),
+                (row.wrapping_sub(1), col + 1),
+                (row, col.wrapping_sub(1)),
+                (row, col + 1),
+                (row + 1, col.wrapping_sub(1)),
+                (row + 1, col),
+                (row + 1, col + 1),
+            ] {
+                if let Some(x) = map.get_mut(r).and_then(|r| r.get_mut(c)) {
+                    match *x {
+                        0 => {}
+                        1..=8 => *x += 1,
+                        _ => iterate(map, flashed, r, c),
+                    };
                 }
             }
+        }
 
-            if !is_flashing {
-                break;
+        self.0.iter_mut().flatten().for_each(|x| *x += 1);
+
+        let mut flashed = 0;
+        for row in 0..SIZE {
+            for col in 0..SIZE {
+                if (0..=9).contains(&self.0[row][col]) {
+                    continue;
+                }
+                iterate(&mut self.0, &mut flashed, row, col);
             }
         }
 
-        self.0
-            .iter_mut()
-            .flat_map(|xs| xs.iter_mut())
-            .filter(|x| **x >= 10)
-            .map(|x| {
-                *x = 0;
-            })
-            .count()
-    }
-
-    fn adjacent(&mut self, row: usize, col: usize, action: impl Fn(&mut u8)) {
-        if let Some(r) = row.checked_sub(1) {
-            let row = &mut self.0[r];
-            if let Some(c) = col.checked_sub(1) {
-                action(&mut row[c]);
-            }
-            action(&mut row[col]);
-            if let Some(v) = row.get_mut(col + 1) {
-                action(v);
-            }
-        }
-
-        {
-            let row = &mut self.0[row];
-            if let Some(c) = col.checked_sub(1) {
-                action(&mut row[c]);
-            }
-            action(&mut row[col]);
-            if let Some(v) = row.get_mut(col + 1) {
-                action(v);
-            }
-        }
-
-        if let Some(row) = self.0.get_mut(row + 1) {
-            if let Some(c) = col.checked_sub(1) {
-                action(&mut row[c]);
-            }
-            action(&mut row[col]);
-            if let Some(v) = row.get_mut(col + 1) {
-                action(v);
-            }
-        }
+        flashed
     }
 }
 
