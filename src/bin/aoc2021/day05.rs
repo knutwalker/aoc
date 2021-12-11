@@ -1,5 +1,4 @@
 use parse_display::FromStr;
-use std::{collections::HashMap, iter::repeat};
 
 register!(
     "input/day5.txt";
@@ -18,18 +17,20 @@ fn part2(items: &[VentLine]) -> usize {
 }
 
 fn solve(items: &[VentLine], include_diagonal: bool) -> usize {
-    let mut covered = HashMap::new();
+    let mut covered = vec![0_u8; 1024 * 1024];
     for VentLine { x1, y1, x2, y2 } in items.iter().copied() {
         if include_diagonal || x1 == x2 || y1 == y2 {
-            let xs = (x1..=x2).chain((x2..=x1).rev()).chain(repeat(x1));
-            let ys = (y1..=y2).chain((y2..=y1).rev()).chain(repeat(y1));
-            let len = 1 + (x2 - x1).unsigned_abs().max((y2 - y1).unsigned_abs()) as usize;
-            xs.zip(ys).take(len).for_each(|p| {
-                *covered.entry(p).or_insert(0) += 1;
-            });
+            let dx = (x2 - x1).signum();
+            let dy = (y2 - y1).signum();
+            let (mut x, mut y) = (x1, y1);
+            while x != x2 + dx || y != y2 + dy {
+                covered[x as usize * 1024 + y as usize] += 1;
+                x += dx;
+                y += dy;
+            }
         }
     }
-    covered.into_iter().filter(|(_, count)| *count >= 2).count()
+    covered.into_iter().filter(|c| *c > 1).count()
 }
 
 #[derive(Clone, Copy, Debug, FromStr)]
