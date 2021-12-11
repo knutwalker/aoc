@@ -1,6 +1,5 @@
-use std::collections::{HashMap, HashSet};
-
 use aoc::{ProcessInput, PuzzleInput};
+use std::collections::{HashMap, HashSet};
 
 type Input = String;
 type Output = String;
@@ -95,7 +94,7 @@ impl ProcessInput for AllergenList {
             }
 
             for added in added.drain(..) {
-                let _ = possible.remove(&added);
+                drop(possible.remove(&added));
             }
         }
 

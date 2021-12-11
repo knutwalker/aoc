@@ -13,7 +13,7 @@ pub struct Answers(u32, bool);
 
 impl From<String> for Answers {
     fn from(input: String) -> Self {
-        Answers(
+        Self(
             input
                 .bytes()
                 .map(|b| b - b'a')
@@ -25,7 +25,7 @@ impl From<String> for Answers {
 
 impl BitOrAssign for Answers {
     fn bitor_assign(&mut self, Self(rhs, _): Self) {
-        self.0 |= rhs
+        self.0 |= rhs;
     }
 }
 
@@ -41,7 +41,7 @@ impl BitAndAssign for Answers {
 }
 
 impl Answers {
-    fn count(&self) -> u32 {
+    fn count(self) -> u32 {
         self.0.count_ones()
     }
 }

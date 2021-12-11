@@ -24,8 +24,7 @@ fn run_any(input: &[Input], stop_at: Output) -> Output {
         .map(Result::unwrap)
         .collect::<Vec<_>>();
 
-    let mut mem = Vec::with_capacity(stop_at);
-    mem.resize(stop_at, 0);
+    let mut mem = vec![0; stop_at];
 
     let mut num = *nums.last().unwrap();
     let start_at = nums.len();
@@ -51,7 +50,7 @@ mod tests {
     fn test() {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 1238);
-        assert_eq!(res2, 3745954);
+        assert_eq!(res2, 3_745_954);
     }
 
     #[test]

@@ -56,14 +56,14 @@ mod tests {
         1456
         "#,
         );
-        assert_eq!(res1, 514579);
-        assert_eq!(res2, 241861950);
+        assert_eq!(res1, 514_579);
+        assert_eq!(res2, 241_861_950);
     }
 
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 805731);
-        assert_eq!(res2, 192684960);
+        assert_eq!(res1, 805_731);
+        assert_eq!(res2, 192_684_960);
     }
 }

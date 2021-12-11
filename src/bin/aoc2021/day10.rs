@@ -101,13 +101,13 @@ mod tests {
         "#;
         let (res1, res2) = Solver::run_on(input);
         assert_eq!(res1, 26397);
-        assert_eq!(res2, 288957);
+        assert_eq!(res2, 288_957);
     }
 
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 394647);
-        assert_eq!(res2, 2380061249);
+        assert_eq!(res1, 394_647);
+        assert_eq!(res2, 2_380_061_249);
     }
 }

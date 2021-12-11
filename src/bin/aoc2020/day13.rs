@@ -4,7 +4,7 @@ register!(
     "input/day13.txt";
     (input: input!(Input)) -> i64 {
         run1(&input);
-        run2(input);
+        run2(&input);
     }
 );
 
@@ -19,7 +19,7 @@ fn run1(input: &[Input]) -> i64 {
         .unwrap()
 }
 
-fn run2(input: Vec<Input>) -> i64 {
+fn run2(input: &[Input]) -> i64 {
     fn gcd(m: usize, n: usize) -> usize {
         match n.checked_rem(m) {
             None => n,
@@ -57,13 +57,13 @@ mod tests {
     fn test() {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 333);
-        assert_eq!(res2, 690123192779524);
+        assert_eq!(res2, 690_123_192_779_524);
     }
 
     #[test]
     fn test_ex1() {
         assert_eq!(
-            (295, 1068781),
+            (295, 1_068_781),
             Solver::run_on(
                 "
         939
@@ -76,32 +76,32 @@ mod tests {
     #[test]
     fn test_p2_0() {
         assert_eq!(
-            1068781,
-            run2(vec![String::new(), String::from("7,13,x,x,59,x,31,19")])
+            1_068_781,
+            run2([String::new(), String::from("7,13,x,x,59,x,31,19")].as_ref())
         );
     }
 
     #[test]
     fn test_p2_1() {
         assert_eq!(
-            754018,
-            run2(vec![String::new(), String::from("67,7,59,61")])
+            754_018,
+            run2([String::new(), String::from("67,7,59,61")].as_ref())
         );
         assert_eq!(
-            779210,
-            run2(vec![String::new(), String::from("67,x,7,59,61")])
+            779_210,
+            run2([String::new(), String::from("67,x,7,59,61")].as_ref())
         );
         assert_eq!(
-            1261476,
-            run2(vec![String::new(), String::from("67,7,x,59,61")])
+            1_261_476,
+            run2([String::new(), String::from("67,7,x,59,61")].as_ref())
         );
     }
 
     #[test]
     fn test_p2_2() {
         assert_eq!(
-            1202161486,
-            run2(vec![String::new(), String::from("1789,37,47,1889")])
+            1_202_161_486,
+            run2([String::new(), String::from("1789,37,47,1889")].as_ref())
         );
     }
 }

@@ -134,6 +134,6 @@ mod tests {
     fn test() {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 564);
-        assert_eq!(res2, 1038240);
+        assert_eq!(res2, 1_038_240);
     }
 }

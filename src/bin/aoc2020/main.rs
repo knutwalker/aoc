@@ -6,8 +6,13 @@
     rust_2018_idioms
 )]
 #![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
     clippy::missing_const_for_fn,
     clippy::redundant_pub_crate,
+    clippy::similar_names,
     unused_variables
 )]
 

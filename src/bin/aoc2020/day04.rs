@@ -1,9 +1,8 @@
+use aoc::{As, Blocks, ProcessInput, PuzzleInput};
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
 };
-
-use aoc::{As, Blocks, ProcessInput, PuzzleInput};
 
 register!(
     "input/day4.txt";
@@ -72,11 +71,10 @@ impl Passport {
             .get("hgt")
             .filter(|c| {
                 let (value, unit) = c.split_at(c.len() - 2);
-                match (value.parse::<u8>().ok(), unit) {
-                    (Some(59..=76), "in") => true,
-                    (Some(150..=193), "cm") => true,
-                    _ => false,
-                }
+                matches!(
+                    (value.parse::<u8>().ok(), unit),
+                    (Some(59..=76), "in") | (Some(150..=193), "cm")
+                )
             })
             .is_some();
 

@@ -1,6 +1,5 @@
-use std::{collections::HashMap, iter::successors, iter::FromIterator};
-
 use aoc::ProcessInput;
+use std::{collections::HashMap, iter::successors, iter::FromIterator, string::String};
 
 type Input = String;
 type Output = u64;
@@ -14,29 +13,6 @@ register!(
 );
 
 fn part1(input: &Map) -> Output {
-    // let mut edges = Edges::new();
-    // let mut tiles = Tiles::new();
-    // let mut blocks = HashMap::new();
-
-    // for block in input {
-    //     let tile = block.iter().map(String::as_str).collect::<Tile>();
-    //     for edge in tile.edges.edges() {
-    //         edges
-    //             .entry(edge)
-    //             .and_modify(|e| match e {
-    //                 Edge::Corner(id) => {
-    //                     *e = Edge::Border(*id, tile.id);
-    //                 }
-    //                 _ => {
-    //                     unreachable!("non distinct edge")
-    //                 }
-    //             })
-    //             .or_insert_with(|| Edge::Corner(tile.id));
-    //     }
-    //     tiles.insert(tile.id, tile.edges);
-    //     blocks.insert(tile.id, block);
-    // }
-
     let dim = input.dim;
     let puzzle = &input.puzzle;
 
@@ -47,37 +23,7 @@ fn part1(input: &Map) -> Output {
 }
 
 fn part2(input: Map) -> Output {
-    // let mut edges = Edges::new();
-    // let mut tiles = Tiles::new();
-    // let mut blocks = HashMap::new();
-
-    // for block in input {
-    //     let tile = block.iter().map(String::as_str).collect::<Tile>();
-    //     for edge in tile.edges.edges() {
-    //         edges
-    //             .entry(edge)
-    //             .and_modify(|e| match e {
-    //                 Edge::Corner(id) => {
-    //                     *e = Edge::Border(*id, tile.id);
-    //                 }
-    //                 _ => {
-    //                     unreachable!("non distinct edge")
-    //                 }
-    //             })
-    //             .or_insert_with(|| Edge::Corner(tile.id));
-    //     }
-    //     tiles.insert(tile.id, tile.edges);
-    //     blocks.insert(tile.id, block);
-    // }
-
     let dim = input.dim;
-    // let puzzle = solve_puzzle(dim, edges, tiles);
-
-    // let pt1 = (puzzle[0][0].id as u64)
-    //     * (puzzle[0][dim - 1].id as u64)
-    //     * (puzzle[dim - 1][0].id as u64)
-    //     * (puzzle[dim - 1][dim - 1].id as u64);
-
     let image = build_image(input.puzzle, input.blocks);
 
     let world_size = image
@@ -97,7 +43,7 @@ fn part2(input: Map) -> Output {
     pt2 as u64
 }
 
-fn solve_puzzle(dim: usize, edges: Edges, tiles: Tiles) -> Vec<Vec<Tile>> {
+fn solve_puzzle(dim: usize, edges: &Edges, tiles: &Tiles) -> Vec<Vec<Tile>> {
     let mut corners = HashMap::new();
     for edge in edges.values() {
         if let Edge::Corner(id) = edge {
@@ -109,7 +55,7 @@ fn solve_puzzle(dim: usize, edges: Edges, tiles: Tiles) -> Vec<Vec<Tile>> {
         .iter()
         .find_map(|(&corner, &count)| {
             if count == 4 {
-                try_solve(dim, &edges, &tiles, corner)
+                try_solve(dim, edges, tiles, corner)
             } else {
                 None
             }
@@ -142,9 +88,9 @@ fn try_solve_from_top_left(
     for i in 1..dim {
         image[i][0] = image[i - 1][0].find_next_down(edges, tiles)?;
     }
-    for i in 0..dim {
+    for row in &mut image {
         for j in 1..dim {
-            image[i][j] = image[i][j - 1].find_next_right(edges, tiles)?;
+            row[j] = row[j - 1].find_next_right(edges, tiles)?;
         }
     }
 
@@ -160,7 +106,7 @@ fn build_image(puzzle: Vec<Vec<Tile>>, mut blocks: HashMap<i16, Vec<String>>) ->
                     let block = blocks.remove(&cell.id).unwrap();
                     // let dim = block.len() - 1;
 
-                    let lines = block.into_iter().skip(1).map(|s| s.into_bytes());
+                    let lines = block.into_iter().skip(1).map(String::into_bytes);
                     let mut block = match cell.orientation {
                         Dir::Up => lines.collect(),
                         x => {
@@ -172,10 +118,10 @@ fn build_image(puzzle: Vec<Vec<Tile>>, mut blocks: HashMap<i16, Vec<String>>) ->
                         }
                     };
                     if matches!(cell.flip, Flip::Horizontal | Flip::Both) {
-                        flip_h(&mut block)
+                        flip_h(&mut block);
                     }
                     if matches!(cell.flip, Flip::Vertical | Flip::Both) {
-                        flip_v(&mut block)
+                        flip_v(&mut block);
                     }
 
                     block[1..9]
@@ -254,13 +200,12 @@ fn count_monsters(dim: usize, image: Vec<Vec<u8>>) -> usize {
     successors(Some(image), |img| Some(rotate(dim * 8, img.iter())))
         .take(4)
         .chain(successors(Some(flipped), |img| Some(rotate(dim * 8, img.iter()))).take(4))
-        .map(|image| count_monsters_in(image, &monster))
-        .filter(|count| *count > 0)
-        .next()
+        .map(|image| count_monsters_in(&image, &monster))
+        .find(|count| *count > 0)
         .unwrap()
 }
 
-fn count_monsters_in(image: Vec<Vec<u8>>, monster: &[(isize, isize)]) -> usize {
+fn count_monsters_in(image: &[Vec<u8>], monster: &[(isize, isize)]) -> usize {
     image
         .iter()
         .enumerate()
@@ -270,7 +215,7 @@ fn count_monsters_in(image: Vec<Vec<u8>>, monster: &[(isize, isize)]) -> usize {
                 .filter(|(_, b)| **b == b'#')
                 .map(move |(j, _)| (i as isize, j as isize))
         })
-        .filter(|&(i, j)| is_monster((i, j), &image, monster))
+        .filter(|&(i, j)| is_monster((i, j), image, monster))
         .count()
 }
 
@@ -399,14 +344,14 @@ impl Tile {
 
     fn find_next_down(&self, edges: &Edges, tiles: &Tiles) -> Option<Self> {
         let other = self.neighbor(Dir::Down, edges)?;
-        let mut tile = Tile::of(other, tiles[&other]);
+        let mut tile = Self::of(other, tiles[&other]);
 
         while tile.neighbor(Dir::Up, edges) != Some(self.id) {
-            tile.rotate()
+            tile.rotate();
         }
 
         if self.edges.bottom() != tile.edges.top() {
-            tile.flip_vertical()
+            tile.flip_vertical();
         }
 
         Some(tile)
@@ -414,14 +359,14 @@ impl Tile {
 
     fn find_next_right(&self, edges: &Edges, tiles: &Tiles) -> Option<Self> {
         let other = self.neighbor(Dir::Right, edges)?;
-        let mut tile = Tile::of(other, tiles[&other]);
+        let mut tile = Self::of(other, tiles[&other]);
 
         while tile.neighbor(Dir::Left, edges) != Some(self.id) {
-            tile.rotate()
+            tile.rotate();
         }
 
         if self.edges.right() != tile.edges.left() {
-            tile.flip_horizontal()
+            tile.flip_horizontal();
         }
 
         Some(tile)
@@ -429,41 +374,41 @@ impl Tile {
 }
 
 impl TileEdges {
-    fn edges(&self) -> TileEdgesIter {
+    fn edges(self) -> TileEdgesIter {
         TileEdgesIter {
-            edges: *self,
+            edges: self,
             edge: 0,
         }
     }
 
-    fn top(&self) -> u16 {
+    fn top(self) -> u16 {
         self.0
     }
 
-    fn right(&self) -> u16 {
+    fn right(self) -> u16 {
         self.1
     }
 
-    fn bottom(&self) -> u16 {
+    fn bottom(self) -> u16 {
         self.2
     }
 
-    fn left(&self) -> u16 {
+    fn left(self) -> u16 {
         self.3
     }
 
-    fn rotated(&self) -> Self {
-        let TileEdges(top, right, bottom, left) = *self;
+    fn rotated(self) -> Self {
+        let TileEdges(top, right, bottom, left) = self;
         Self(Self::swap(left), top, Self::swap(right), bottom)
     }
 
-    fn h_flipped(&self) -> Self {
-        let TileEdges(top, right, bottom, left) = *self;
+    fn h_flipped(self) -> Self {
+        let TileEdges(top, right, bottom, left) = self;
         Self(bottom, Self::swap(right), top, Self::swap(left))
     }
 
-    fn v_flipped(&self) -> Self {
-        let TileEdges(top, right, bottom, left) = *self;
+    fn v_flipped(self) -> Self {
+        let TileEdges(top, right, bottom, left) = self;
         Self(Self::swap(top), left, Self::swap(bottom), right)
     }
 
@@ -534,9 +479,9 @@ impl<'a> FromIterator<&'a str> for Tile {
             | ((tile >> 27) & 8) as u16
             | ((tile >> 18) & 4) as u16
             | ((tile >> 9) & 2) as u16
-            | ((tile >> 0) & 1) as u16;
+            | (tile & 1) as u16;
 
-        Tile::of(id, TileEdges(top, right, bottom, left))
+        Self::of(id, TileEdges(top, right, bottom, left))
     }
 }
 
@@ -565,8 +510,8 @@ impl ProcessInput for Map {
                         Edge::Corner(id) => {
                             *e = Edge::Border(*id, tile.id);
                         }
-                        _ => {
-                            unreachable!("non distinct edge")
+                        Edge::Border(..) => {
+                            unreachable!("non distinct edge");
                         }
                     })
                     .or_insert_with(|| Edge::Corner(tile.id));
@@ -576,7 +521,7 @@ impl ProcessInput for Map {
         }
 
         let dim = (tiles.len() as f32).sqrt() as usize;
-        let puzzle = solve_puzzle(dim, edges, tiles);
+        let puzzle = solve_puzzle(dim, &edges, &tiles);
 
         Self {
             dim,
@@ -623,14 +568,15 @@ mod tests {
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 47213728755493);
+        assert_eq!(res1, 47_213_728_755_493);
         assert_eq!(res2, 1599);
     }
 
+    #[allow(clippy::too_many_lines)]
     #[test]
     fn test_ex() {
         assert_eq!(
-            (20899048083289, 273),
+            (20_899_048_083_289, 273),
             Solver::run_on(
                 r#"
     Tile 2311:

@@ -83,7 +83,7 @@ forward 2
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 1698735);
-        assert_eq!(res2, 1594785890);
+        assert_eq!(res1, 1_698_735);
+        assert_eq!(res2, 1_594_785_890);
     }
 }

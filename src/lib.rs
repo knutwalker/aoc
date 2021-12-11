@@ -324,7 +324,7 @@ macro_rules! aoc_main {
                         $day => {
                             let solution = $md::Solver::solve();
                             let day_time = solution.parse_time + solution.part1_time + solution.part2_time;
-                            total_time = total_time + day_time;
+                            total_time += day_time;
 
                             if !suppress_output {
                                 println!("Day {:02}", day);

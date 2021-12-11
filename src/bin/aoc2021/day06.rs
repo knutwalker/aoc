@@ -51,13 +51,13 @@ mod tests {
         let input = r#"3,4,3,1,2"#;
         let (res1, res2) = Solver::run_on(input);
         assert_eq!(res1, 5934);
-        assert_eq!(res2, 26984457539);
+        assert_eq!(res2, 26_984_457_539);
     }
 
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 360610);
-        assert_eq!(res2, 1631629590423);
+        assert_eq!(res1, 360_610);
+        assert_eq!(res2, 1_631_629_590_423);
     }
 }

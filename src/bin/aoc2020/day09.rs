@@ -4,7 +4,7 @@ register!(
         run1(&input, 25);
         {
             let part1 = run1(&input, 25);
-            run2(input, part1)
+            run2(&input, part1)
         }
     }
 );
@@ -15,7 +15,7 @@ fn run1(input: &[u64], pre_len: usize) -> u64 {
         .find_map(|win| {
             let (&check, nums) = win.split_last().unwrap();
 
-            if nums
+            if !nums
                 .iter()
                 .copied()
                 .flat_map(|n| {
@@ -24,8 +24,7 @@ fn run1(input: &[u64], pre_len: usize) -> u64 {
                         .filter(move |&m| n != m)
                         .map(move |m| n + m)
                 })
-                .find(|&sum| sum == check)
-                .is_none()
+                .any(|sum| sum == check)
             {
                 return Some(check);
             }
@@ -35,7 +34,7 @@ fn run1(input: &[u64], pre_len: usize) -> u64 {
         .unwrap()
 }
 
-fn run2(input: Vec<u64>, needle: u64) -> u64 {
+fn run2(input: &[u64], needle: u64) -> u64 {
     for i in 2..input.len() {
         if let Some(xs) = input.windows(i).find(|xs| xs.iter().sum::<u64>() == needle) {
             let min = xs.iter().min().unwrap();
@@ -54,8 +53,8 @@ mod tests {
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 1309761972);
-        assert_eq!(res2, 177989832);
+        assert_eq!(res1, 1_309_761_972);
+        assert_eq!(res2, 177_989_832);
     }
 
     fn input() -> Vec<u64> {
@@ -88,6 +87,6 @@ mod tests {
     #[test]
     fn test_ex1() {
         assert_eq!(127, run1(&input(), 5));
-        assert_eq!(62, run2(input(), 127));
+        assert_eq!(62, run2(&input(), 127));
     }
 }

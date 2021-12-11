@@ -31,8 +31,7 @@ fn run2(input: &[u8]) -> Output {
 }
 
 fn run_any(input: &[u8], cards: u32, games: u32) -> Vec<u32> {
-    let mut cups = Vec::<u32>::with_capacity(cards as usize);
-    cups.resize(cards as usize, 0);
+    let mut cups = vec![0; cards as usize];
 
     let mut prev = -1;
     for value in input
@@ -91,17 +90,17 @@ mod tests {
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 97624853);
-        assert_eq!(res2, 664642452305);
+        assert_eq!(res1, 97_624_853);
+        assert_eq!(res2, 664_642_452_305);
     }
 
     #[test]
     fn test_ex() {
-        assert_eq!((67384529, 149245887792), Solver::run_on("389125467"));
+        assert_eq!((67_384_529, 149_245_887_792), Solver::run_on("389125467"));
     }
 
     #[test]
     fn test_small_ex() {
-        assert_eq!(92658374, run1("389125467".as_bytes(), 10));
+        assert_eq!(92_658_374, run1(b"389125467", 10));
     }
 }

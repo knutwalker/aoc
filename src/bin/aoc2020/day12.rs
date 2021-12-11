@@ -1,3 +1,4 @@
+use self::dir::{Dir, Op};
 use std::ops::{AddAssign, SubAssign};
 
 type Input = Dir;
@@ -5,7 +6,7 @@ type Pos = (isize, isize);
 
 register!(
     "input/day12.txt";
-    (input: input!(Input)) -> usize {
+    (input: input!(parse Input)) -> usize {
         Ship1::run(input.iter().copied());
         Ship2::run(input);
     }
@@ -151,10 +152,10 @@ impl From<isize> for Heading {
 impl From<u8> for Heading {
     fn from(x: u8) -> Self {
         match x % 4 {
-            0 => Heading::North,
-            1 => Heading::East,
-            2 => Heading::South,
-            3 => Heading::West,
+            0 => Self::North,
+            1 => Self::East,
+            2 => Self::South,
+            3 => Self::West,
             _ => unreachable!(),
         }
     }
@@ -162,7 +163,7 @@ impl From<u8> for Heading {
 
 impl AddAssign<isize> for Heading {
     fn add_assign(&mut self, rhs: isize) {
-        *self = Self::from((*self as u8) + (Self::from(rhs) as u8))
+        *self = Self::from((*self as u8) + (Self::from(rhs) as u8));
     }
 }
 
@@ -172,40 +173,27 @@ impl SubAssign<isize> for Heading {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
-pub enum Op {
-    N,
-    E,
-    S,
-    W,
-    L,
-    R,
-    F,
-}
+#[allow(clippy::use_self)]
+mod dir {
+    use parse_display::FromStr;
 
-#[derive(Debug, Copy, Clone)]
-pub struct Dir {
-    op: Op,
-    num: isize,
-}
+    #[derive(Debug, Copy, Clone, FromStr)]
+    #[display("{}")]
+    pub enum Op {
+        N,
+        E,
+        S,
+        W,
+        L,
+        R,
+        F,
+    }
 
-impl From<String> for Dir {
-    fn from(s: String) -> Self {
-        let op = match s.chars().next().unwrap() {
-            'N' => Op::N,
-            'E' => Op::E,
-            'S' => Op::S,
-            'W' => Op::W,
-            'L' => Op::L,
-            'R' => Op::R,
-            'F' => Op::F,
-            otherwise => unreachable!("Unexpected input: {}", otherwise),
-        };
-        let num = s[1..].parse().unwrap();
-        if matches!(op, Op::L | Op::R) {
-            assert!(num % 90 == 0);
-        }
-        Self { op, num }
+    #[derive(Debug, Copy, Clone, FromStr)]
+    #[from_str(regex = "(?P<op>[NESWLRF])(?P<num>[0-9]+)")]
+    pub struct Dir {
+        pub(super) op: Op,
+        pub(super) num: isize,
     }
 }
 

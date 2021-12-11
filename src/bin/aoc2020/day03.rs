@@ -2,7 +2,7 @@ register!(
     "input/day3.txt";
     (input: input!(Vec<u8>)) -> usize {
         count_trees((3, 1), &input);
-        part2(input);
+        part2(&input);
     }
 );
 
@@ -21,12 +21,12 @@ fn is_tree((line, index): (impl AsRef<[u8]>, usize)) -> bool {
     line[index % line.len()] == b'#'
 }
 
-fn part2(lines: Vec<Vec<u8>>) -> usize {
-    count_trees((1, 1), &lines)
-        * count_trees((3, 1), &lines)
-        * count_trees((5, 1), &lines)
-        * count_trees((7, 1), &lines)
-        * count_trees((1, 2), &lines)
+fn part2(lines: &[Vec<u8>]) -> usize {
+    count_trees((1, 1), lines)
+        * count_trees((3, 1), lines)
+        * count_trees((5, 1), lines)
+        * count_trees((7, 1), lines)
+        * count_trees((1, 2), lines)
 }
 
 #[cfg(test)]
@@ -58,6 +58,6 @@ mod tests {
     fn test() {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 284);
-        assert_eq!(res2, 3510149120);
+        assert_eq!(res2, 3_510_149_120);
     }
 }

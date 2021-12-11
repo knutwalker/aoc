@@ -1,10 +1,9 @@
+use aoc::{ProcessInput, PuzzleInput};
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
     iter::FromIterator,
 };
-
-use aoc::{ProcessInput, PuzzleInput};
 
 type Input = String;
 type Output = usize;
@@ -12,12 +11,12 @@ type Output = usize;
 register!(
     "input/day22.txt";
     (input: input!(process DeckInput)) -> Output {
-        run1(input.0, input.1);
+        run1(input.0.clone(), input.1.clone());
         run2(input.0, input.1);
     }
 );
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Deck {
     cards: [u8; 50],
     read: u8,
@@ -114,7 +113,7 @@ impl DoubleEndedIterator for Deck {
 }
 
 impl Hash for Deck {
-    fn hash<H: Hasher>(&self, state: &mut H) -> () {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         self.len.hash(state);
         if self.write > self.read {
             Hash::hash_slice(&self.cards[self.read as usize..self.write as usize], state);
@@ -137,18 +136,14 @@ fn run1(mut player1: Deck, mut player2: Deck) -> Output {
         }
     }
 
-    eval(if player1.is_empty() {
-        &player2
-    } else {
-        &player1
-    })
+    eval(if player1.is_empty() { player2 } else { player1 })
 }
 
 fn run2(mut player1: Deck, mut player2: Deck) -> Output {
     eval(if play_round(&mut player1, &mut player2) {
-        &player1
+        player1
     } else {
-        &player2
+        player2
     })
 }
 
@@ -186,7 +181,7 @@ fn hash(p1: &Deck, p2: &Deck) -> u64 {
     hasher.finish()
 }
 
-fn eval(deck: &Deck) -> Output {
+fn eval(deck: Deck) -> Output {
     deck.rev()
         .enumerate()
         .map(|(i, c)| (i + 1) * usize::from(c))
@@ -259,33 +254,33 @@ mod tests {
     fn test_deck_pop() {
         let mut deck = (1..=50).collect::<Deck>();
         assert_eq!(50, deck.len());
-        assert!(deck.is_empty() == false);
+        assert!(!deck.is_empty());
 
         for i in 1..=49 {
             assert_eq!(i, deck.pop());
             assert_eq!(50 - i, deck.len());
-            assert!(deck.is_empty() == false);
+            assert!(!deck.is_empty());
         }
 
         assert_eq!(50, deck.pop());
         assert_eq!(0, deck.len());
-        assert!(deck.is_empty() == true);
+        assert!(deck.is_empty());
     }
 
     #[test]
     fn test_deck_pop_last() {
         let mut deck = (1..=50).collect::<Deck>();
         assert_eq!(50, deck.len());
-        assert!(deck.is_empty() == false);
+        assert!(!deck.is_empty());
 
         for i in 1..=49 {
             assert_eq!(50 - i + 1, deck.pop_last());
             assert_eq!(50 - i, deck.len());
-            assert!(deck.is_empty() == false);
+            assert!(!deck.is_empty());
         }
 
         assert_eq!(1, deck.pop());
         assert_eq!(0, deck.len());
-        assert!(deck.is_empty() == true);
+        assert!(deck.is_empty());
     }
 }

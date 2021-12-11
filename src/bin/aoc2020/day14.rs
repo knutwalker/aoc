@@ -1,3 +1,4 @@
+use parse_display::FromStr;
 use std::collections::HashMap;
 
 type Input = Op;
@@ -5,7 +6,7 @@ type Output = u64;
 
 register!(
     "input/day14.txt";
-    (input: input!(Input)) -> Output {
+    (input: input!(parse Input)) -> Output {
         run1(&input);
         run2(input);
     }
@@ -77,7 +78,7 @@ fn run2(input: Vec<Input>) -> Output {
                         .bytes()
                         .rev()
                         .enumerate()
-                        .filter_map(|(i, b)| if b != b'0' { Some(1 << i) } else { None })
+                        .filter_map(|(i, b)| if b == b'0' { None } else { Some(1 << i) })
                         .fold(0_u64, |sum, digit| sum | digit);
                 }
                 Op::Mem(addr, value) => {
@@ -95,24 +96,12 @@ fn run2(input: Vec<Input>) -> Output {
         .sum()
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, FromStr)]
 pub enum Op {
+    #[display("mask = {0}")]
     Mask(String),
+    #[display("mem[{0}] = {1}")]
     Mem(u64, u64),
-}
-
-impl From<String> for Op {
-    fn from(line: String) -> Self {
-        if let Some(mask) = line.strip_prefix("mask = ") {
-            Op::Mask(mask.to_string())
-        } else {
-            let mem = line.strip_prefix("mem[").unwrap();
-            let mut parts = mem.split("] = ");
-            let addr = parts.next().unwrap().parse().unwrap();
-            let value = parts.next().unwrap().parse().unwrap();
-            Op::Mem(addr, value)
-        }
-    }
 }
 
 #[cfg(test)]
@@ -123,8 +112,8 @@ mod tests {
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 8332632930672);
-        assert_eq!(res2, 4753238784664);
+        assert_eq!(res1, 8_332_632_930_672);
+        assert_eq!(res2, 4_753_238_784_664);
     }
 
     #[test]

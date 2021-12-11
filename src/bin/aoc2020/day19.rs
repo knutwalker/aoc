@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use aoc::ProcessInput;
+use std::collections::HashMap;
 
 type Input = String;
 type Output = usize;
@@ -51,7 +50,7 @@ where
         .iter()
         .map(|msg| {
             let bs = msg.as_bytes();
-            let (matches, rest) = check(&rules, bs);
+            let (matches, rest) = check(rules, bs);
             (matches && rest.is_empty()) as Output
         })
         .sum()
@@ -65,10 +64,10 @@ fn run1(rules: &Rules, messages: &[Input]) -> Output {
 
 // 0:  8   42+    ~    11: 42{n, n>=1} ~ 31{=n}
 fn matches_new_rule0<'b>(rules: &Rules, bs: &'b [u8]) -> (bool, &'b [u8]) {
-    let mut input = &bs[..];
+    let mut input = bs;
     let mut matches42 = 0;
     loop {
-        let (matches, rest) = matches_rule(&rules, &rules[&42], input);
+        let (matches, rest) = matches_rule(rules, &rules[&42], input);
         if !matches {
             break;
         }
@@ -78,7 +77,7 @@ fn matches_new_rule0<'b>(rules: &Rules, bs: &'b [u8]) -> (bool, &'b [u8]) {
 
     let mut matches31 = 0;
     loop {
-        let (matches, rest) = matches_rule(&rules, &rules[&31], input);
+        let (matches, rest) = matches_rule(rules, &rules[&31], input);
         if !matches {
             break;
         }
@@ -93,7 +92,7 @@ fn matches_new_rule0<'b>(rules: &Rules, bs: &'b [u8]) -> (bool, &'b [u8]) {
 }
 
 fn run2(rules: &Rules, messages: &[Input]) -> Output {
-    run_any(rules, messages, |rs, input| matches_new_rule0(rs, input))
+    run_any(rules, messages, matches_new_rule0)
 }
 
 pub struct RulesInput(Rules, Vec<Input>);

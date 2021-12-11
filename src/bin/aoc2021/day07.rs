@@ -56,7 +56,7 @@ mod tests {
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 344535);
-        assert_eq!(res2, 95581659);
+        assert_eq!(res1, 344_535);
+        assert_eq!(res2, 95_581_659);
     }
 }

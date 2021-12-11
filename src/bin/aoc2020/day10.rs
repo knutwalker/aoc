@@ -5,7 +5,7 @@ register!(
     "input/day10.txt";
     (input: input!(process Input)) -> u64 {
         run1(&input);
-        run2(input);
+        run2(&input);
     }
 );
 
@@ -20,7 +20,7 @@ fn run1(input: &[u64]) -> u64 {
     diff1 * diff3
 }
 
-fn run2(input: Vec<u64>) -> u64 {
+fn run2(input: &[u64]) -> u64 {
     input
         .windows(2)
         .map(|w| w[1] - w[0])
@@ -38,7 +38,7 @@ fn run2(input: Vec<u64>) -> u64 {
                 },
             })
         })
-        .filter_map(|r| r)
+        .flatten()
         .product()
 }
 
@@ -66,7 +66,7 @@ mod tests {
     fn test() {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 2738);
-        assert_eq!(res2, 74049191673856);
+        assert_eq!(res2, 74_049_191_673_856);
     }
 
     #[test]

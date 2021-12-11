@@ -18,8 +18,8 @@ register!(
 
 fn run_any(input: &[Input], fourth_dim: bool) -> Output {
     let mut grid = Grid::with_capacity(4096);
-    for (z, row) in input.into_iter().enumerate() {
-        for (x, c) in row.into_iter().enumerate() {
+    for (z, row) in input.iter().enumerate() {
+        for (x, c) in row.iter().enumerate() {
             if *c == b'#' {
                 grid.insert((x as isize, z as isize, 0, 0));
             }

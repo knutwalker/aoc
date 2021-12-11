@@ -1,16 +1,17 @@
+use self::bags::{Bag, Bags};
+use aoc::{ProcessInput, PuzzleInput};
+use parse_display::FromStr;
 use std::collections::HashMap;
-
-use aoc::PuzzleInput;
 
 register!(
     "input/day7.txt";
-    (input: input!(verbatim RuleInput)) -> usize {
+    (input: input!(process RuleInput)) -> usize {
         run1(&input);
-        run2(input);
+        run2(&input);
     }
 );
 
-pub type Rules = HashMap<String, Vec<(usize, String)>>;
+pub type Rules = HashMap<String, Vec<Bag>>;
 
 fn run1(input: &Rules) -> usize {
     let mut total = 0;
@@ -18,7 +19,7 @@ fn run1(input: &Rules) -> usize {
         let mut keys = vec![key.as_str()];
         while !keys.is_empty() {
             let key = keys.pop().unwrap();
-            for (_, color) in &input[key] {
+            for Bag { color, .. } in &input[key] {
                 if color == "shiny gold" {
                     total += 1;
                     keys.clear();
@@ -31,13 +32,13 @@ fn run1(input: &Rules) -> usize {
     total
 }
 
-fn run2(input: Rules) -> usize {
+fn run2(input: &Rules) -> usize {
     let mut total = 0;
     let mut q = vec![(1, "shiny gold")];
     while !q.is_empty() {
         let (mult, next) = q.pop().unwrap();
-        for (amt, color) in &input[next] {
-            let amt = *amt * mult;
+        for Bag { amount, color } in &input[next] {
+            let amt = *amount * mult;
             total += amt;
             q.push((amt, color.as_str()));
         }
@@ -45,45 +46,60 @@ fn run2(input: Rules) -> usize {
     total
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, FromStr)]
+#[display("{outer} bags contain {inner}.")]
+#[from_str(new = Self::from_parsed(outer, inner))]
 pub struct Rule {
     outer: String,
-    inner: Vec<(usize, String)>,
+    inner: Vec<Bag>,
 }
 
-impl From<String> for Rule {
-    fn from(input: String) -> Self {
-        let mut parts = input.splitn(2, " bags contain ");
-        let outer = parts.next().unwrap().to_string();
-        let contains = parts.next().unwrap();
-        let inner = contains
-            .split([',', '.'].as_ref())
-            .map(|p| p.trim())
-            .filter(|p| !p.is_empty())
-            .map(|p| match p {
-                "no other bags" => None,
-                _ => {
-                    let mut p = p.splitn(2, ' ');
-                    let amt = p.next().unwrap().parse::<usize>().unwrap();
-                    let other = p.next().unwrap();
-                    let other = other.rsplitn(2, ' ').last().unwrap();
-                    Some((amt, other.to_string()))
-                }
+impl Rule {
+    #[allow(clippy::needless_pass_by_value)]
+    fn from_parsed(outer: String, inner: String) -> Result<Self, parse_display::ParseError> {
+        let inner = inner
+            .split(", ")
+            .map(str::parse::<Bags>)
+            .filter_map(|bags| {
+                bags.map(|bags| match bags {
+                    Bags::Bag(bag) => Some(bag),
+                    Bags::NoOther => None,
+                })
+                .transpose()
             })
-            .filter_map(|r| r)
-            .collect();
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(Self { outer, inner })
+    }
+}
 
-        Rule { outer, inner }
+#[allow(clippy::use_self)]
+mod bags {
+    use parse_display::FromStr;
+
+    #[derive(Clone, Debug, FromStr)]
+    pub enum Bags {
+        #[display("no other bags")]
+        NoOther,
+        #[from_str(regex = "(?P<0>.+) bags?")]
+        Bag(Bag),
+    }
+
+    #[derive(Clone, Debug, FromStr)]
+    #[from_str(regex = "(?P<amount>[0-9]+) (?P<color>.+)")]
+    pub struct Bag {
+        pub(super) amount: usize,
+        pub(super) color: String,
     }
 }
 
 pub struct RuleInput;
 
-impl PuzzleInput for RuleInput {
+impl ProcessInput for RuleInput {
+    type In = input!(parse Rule);
+
     type Out = Rules;
 
-    fn from_input(input: &str) -> Self::Out {
-        let input = <aoc::As<Rule> as PuzzleInput>::from_input(input);
+    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out {
         input
             .into_iter()
             .map(|Rule { outer, inner }| (outer, inner))

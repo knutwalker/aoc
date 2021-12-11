@@ -1,8 +1,9 @@
+use parse_display::FromStr;
 use std::collections::HashSet;
 
 register!(
     "input/day8.txt";
-    (input: input!(Op)) -> i32 {
+    (input: input!(parse Op)) -> i32 {
         run1(&input);
         run2(input);
     }
@@ -33,7 +34,7 @@ fn run2(mut input: Vec<Op>) -> i32 {
         match op {
             Op::Nop(amt) => input[i] = Op::Jmp(amt),
             Op::Jmp(amt) => input[i] = Op::Nop(amt),
-            _ => {}
+            Op::Acc(_) => {}
         }
         if let Some(amt) = try_run2(&input) {
             return amt;
@@ -65,25 +66,13 @@ fn try_run2(input: &[Op]) -> Option<i32> {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, FromStr)]
+#[display(style = "lowercase")]
+#[display("{} {0}")]
 pub enum Op {
     Nop(i32),
     Acc(i32),
     Jmp(i32),
-}
-
-impl From<String> for Op {
-    fn from(input: String) -> Self {
-        let mut parts = input.split_ascii_whitespace();
-        let op = parts.next().unwrap();
-        let amt = parts.next().unwrap().parse::<i32>().unwrap();
-        match op {
-            "nop" => Op::Nop(amt),
-            "acc" => Op::Acc(amt),
-            "jmp" => Op::Jmp(amt),
-            op => unreachable!("op : {}", op),
-        }
-    }
 }
 
 #[cfg(test)]

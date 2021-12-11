@@ -1,3 +1,4 @@
+use parse_display::FromStr;
 use std::{collections::HashSet, ops::RangeInclusive};
 
 type Input = String;
@@ -19,25 +20,43 @@ struct Rule {
 }
 
 impl Rule {
-    fn valid(&self, num: &Output) -> bool {
-        self.r1.contains(num) || self.r2.contains(num)
+    fn valid(&self, num: Output) -> bool {
+        self.r1.contains(&num) || self.r2.contains(&num)
     }
 }
 
-impl From<&str> for Rule {
-    fn from(r: &str) -> Self {
-        let mut r = r.split(':');
-        let departure = r.next().unwrap().starts_with("departure ");
-        let r = r.next().unwrap().trim();
-        let mut r = r.split(" or ");
-        let r1 = r.next().unwrap();
-        let mut r1 = r1.split('-').map(str::parse::<Output>).map(Result::unwrap);
-        let r1 = r1.next().unwrap()..=r1.next().unwrap();
-        let r2 = r.next().unwrap();
-        let mut r2 = r2.split('-').map(str::parse::<Output>).map(Result::unwrap);
-        let r2 = r2.next().unwrap()..=r2.next().unwrap();
+impl From<RuleAlternative> for Rule {
+    fn from(rr: RuleAlternative) -> Self {
+        let (departure, RangeAlternative { a, b }) = match rr {
+            RuleAlternative::Departure(range) => (true, range),
+            RuleAlternative::Other(range) => (false, range),
+        };
+        let r1 = a.min..=a.max;
+        let r2 = b.min..=b.max;
         Self { departure, r1, r2 }
     }
+}
+
+#[derive(Clone, Debug, FromStr)]
+enum RuleAlternative {
+    #[from_str(regex = "departure [a-z]+: (?P<0>.+)")]
+    Departure(RangeAlternative),
+    #[from_str(regex = "[a-z ]+: (?P<0>.+)")]
+    Other(RangeAlternative),
+}
+
+#[derive(Clone, Copy, Debug, FromStr)]
+#[display("{a} or {b}")]
+struct RangeAlternative {
+    a: RuleRange,
+    b: RuleRange,
+}
+
+#[derive(Clone, Copy, Debug, FromStr)]
+#[display("{min}-{max}")]
+struct RuleRange {
+    min: Output,
+    max: Output,
 }
 
 fn run1(input: &[Vec<Input>]) -> Output {
@@ -46,16 +65,20 @@ fn run1(input: &[Vec<Input>]) -> Output {
     let _my_tickets = chunks.next().unwrap();
     let other_tickets = chunks.next().unwrap();
 
-    let rules = rules.iter().map(|s| Rule::from(&**s)).collect::<Vec<_>>();
+    let rules = rules
+        .iter()
+        .map(|s| s.parse::<RuleAlternative>().unwrap())
+        .map(Rule::from)
+        .collect::<Vec<_>>();
 
     other_tickets
-        .into_iter()
+        .iter()
         .skip(1)
         .map(|t| {
             t.split(',')
                 .map(str::parse::<Output>)
                 .map(Result::unwrap)
-                .filter(|n| !rules.iter().any(|r| r.valid(n)))
+                .filter(|n| !rules.iter().any(|r| r.valid(*n)))
                 .sum::<Output>()
         })
         .sum()
@@ -67,7 +90,8 @@ fn run2(input: Vec<Vec<Input>>) -> Output {
     let rules = chunks.next().unwrap();
     let rules = rules
         .into_iter()
-        .map(|s| Rule::from(&*s))
+        .map(|s| s.parse::<RuleAlternative>().unwrap())
+        .map(Rule::from)
         .collect::<Vec<_>>();
 
     let my = chunks.next().unwrap();
@@ -90,7 +114,7 @@ fn run2(input: Vec<Vec<Input>>) -> Output {
                 .map(str::parse::<Output>)
                 .map(Result::unwrap)
                 .collect::<Vec<_>>();
-            if nums.iter().any(|n| !rules.iter().any(|r| r.valid(n))) {
+            if nums.iter().any(|n| !rules.iter().any(|r| r.valid(*n))) {
                 None
             } else {
                 Some(nums)
@@ -100,7 +124,7 @@ fn run2(input: Vec<Vec<Input>>) -> Output {
 
     let num_rules = rules.len();
     let mut solved = HashSet::new();
-    let mut rules = rules.into_iter().map(|x| Some(x)).collect::<Vec<_>>();
+    let mut rules = rules.into_iter().map(Some).collect::<Vec<_>>();
     let mut rules_in_order = Vec::with_capacity(num_rules);
     rules_in_order.resize_with(rules.len(), || None::<Rule>);
     while solved.len() != num_rules {
@@ -108,16 +132,14 @@ fn run2(input: Vec<Vec<Input>>) -> Output {
             if let Some(r) = rule {
                 let candidates = (0..num_rules)
                     .filter(|idx| !solved.contains(idx))
-                    .filter(|&idx| others.iter().all(|t| r.valid(&t[idx])))
+                    .filter(|&idx| others.iter().all(|t| r.valid(t[idx])))
                     .collect::<Vec<_>>();
 
                 if let &[idx] = &candidates[..] {
                     rules_in_order[idx] = rule.take();
                     solved.insert(idx);
-                } else {
-                    if candidates.is_empty() {
-                        panic!("rule not valid anywhere: {:#?}", rule)
-                    }
+                } else if candidates.is_empty() {
+                    panic!("rule not valid anywhere: {:#?}", rule)
                 }
             }
         }
@@ -125,7 +147,7 @@ fn run2(input: Vec<Vec<Input>>) -> Output {
 
     rules_in_order
         .into_iter()
-        .map(|r| r.unwrap())
+        .flatten()
         .enumerate()
         .filter_map(|(idx, r)| if r.departure { Some(my[idx]) } else { None })
         .product()
@@ -140,7 +162,7 @@ mod tests {
     fn test() {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 18227);
-        assert_eq!(res2, 2355350878831);
+        assert_eq!(res2, 2_355_350_878_831);
     }
 
     #[test]

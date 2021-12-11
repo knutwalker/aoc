@@ -1,4 +1,3 @@
-// use aoc::register2;
 use std::ops::{Deref, DerefMut};
 
 register!(
@@ -14,7 +13,7 @@ pub struct Seat(u16);
 
 impl From<String> for Seat {
     fn from(input: String) -> Self {
-        Seat(
+        Self(
             input
                 .bytes()
                 .map(|c| match c {

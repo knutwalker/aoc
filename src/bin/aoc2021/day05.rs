@@ -24,7 +24,7 @@ fn solve(items: &[VentLine], include_diagonal: bool) -> usize {
             let dy = (y2 - y1).signum();
             let (mut x, mut y) = (x1, y1);
             while x != x2 + dx || y != y2 + dy {
-                covered[x as usize * 1024 + y as usize] += 1;
+                covered[usize::try_from(x * 1024 + y).unwrap()] += 1;
                 x += dx;
                 y += dy;
             }

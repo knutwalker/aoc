@@ -1,9 +1,8 @@
+use aoc::{ProcessInput, PuzzleInput};
 use std::{
     collections::{HashMap, HashSet},
     iter::successors,
 };
-
-use aoc::{ProcessInput, PuzzleInput};
 
 type Input = Vec<u8>;
 type Output = usize;
@@ -46,7 +45,7 @@ fn cycle(grid: &Grid) -> Grid {
 fn count_neighbors(grid: &Grid) -> HashMap<Tile, isize> {
     let cap = grid.len() * 36;
     let mut counts = HashMap::with_capacity(cap);
-    for tile in grid {
+    for &tile in grid {
         for tile in neighbours(tile) {
             *counts.entry(tile).or_default() += 1;
         }
@@ -54,7 +53,7 @@ fn count_neighbors(grid: &Grid) -> HashMap<Tile, isize> {
     counts
 }
 
-fn neighbours(&tile: &Tile) -> impl Iterator<Item = Tile> {
+fn neighbours(tile: Tile) -> impl Iterator<Item = Tile> {
     Neighbors {
         tile,
         dir: Some(Dir::E),
