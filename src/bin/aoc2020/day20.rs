@@ -528,35 +528,6 @@ impl ProcessInput for Map {
             puzzle,
             blocks,
         }
-
-        // fn run(input: Vec<Vec<Input>>) -> (Output, Output) {
-
-        //     let dim = (tiles.len() as f32).sqrt() as usize;
-        //     let puzzle = solve_puzzle(dim, edges, tiles);
-
-        //     let pt1 = (puzzle[0][0].id as u64)
-        //         * (puzzle[0][dim - 1].id as u64)
-        //         * (puzzle[dim - 1][0].id as u64)
-        //         * (puzzle[dim - 1][dim - 1].id as u64);
-
-        //     let image = build_image(puzzle, blocks);
-
-        //     let world_size = image
-        //         .iter()
-        //         .flat_map(|line| line.iter())
-        //         .filter(|b| **b == b'#')
-        //         .count();
-        //     let monster_size = SEA_MONSTER
-        //         .iter()
-        //         .flat_map(|line| line.bytes())
-        //         .filter(|b| *b == b'#')
-        //         .count();
-
-        //     let monsters = count_monsters(dim, image);
-        //     let pt2 = world_size - monsters * monster_size;
-
-        //     (pt1, pt2 as u64)
-        // }
     }
 }
 

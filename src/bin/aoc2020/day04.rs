@@ -1,4 +1,4 @@
-use aoc::{As, Blocks, ProcessInput, PuzzleInput};
+use aoc::{ProcessInput, PuzzleInput};
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
@@ -105,7 +105,7 @@ impl ProcessInput for Passports {
 
     type Out = Vec<Passport>;
 
-    fn process(input: <Blocks<As<String>> as PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out {
         input
             .into_iter()
             .map(|block| {
