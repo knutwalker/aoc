@@ -330,7 +330,7 @@ macro_rules! aoc_main {
                                 println!("Day {:02}", day);
                                 println!("  - {}", $crate::ResultLine::note("Parsing", solution.parse_time));
                                 println!("  - {}", $crate::ResultLine::solution(1, solution.part1_time, solution.part1));
-                                println!("  - {}", $crate::ResultLine::solution(1, solution.part2_time, solution.part2));
+                                println!("  - {}", $crate::ResultLine::solution(2, solution.part2_time, solution.part2));
                                 println!("  - {}", $crate::ResultLine::note("Total", day_time));
                                 println!();
                             }
