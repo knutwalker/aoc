@@ -4,7 +4,8 @@
     control_flow_enum,
     drain_filter,
     iter_partition_in_place,
-    let_else
+    let_else,
+    portable_simd
 )]
 #![warn(
     clippy::all,

@@ -1,7 +1,7 @@
 use aoc::ProcessInput;
-use graph::prelude::*;
 use indexmap::IndexSet;
 use parse_display::FromStr;
+use std::simd::{u16x16, Simd};
 
 type Input = Cave;
 type Output = usize;
@@ -9,66 +9,46 @@ type Output = usize;
 register!(
     "input/day12.txt";
     (cave: input!(process Input)) -> Output {
-        cave.all_paths(false).count();
-        cave.all_paths(true).count();
+        cave.count_paths(false);
+        cave.count_paths(true);
     }
 );
 
+#[derive(Clone, Copy, Debug)]
 pub struct Cave {
-    g: UndirectedCsrGraph<u32, u32>,
-    start: u32,
-    end: u32,
+    graph: u16x16,
+    start: u8,
+    end: u8,
+    can_visit: u32,
 }
 
 impl Cave {
-    fn all_paths(&self, can_visit_twice: bool) -> AllPaths<'_> {
-        let path = Path::new(self.start, can_visit_twice, &self.g);
+    fn count_paths(self, can_visit_twice: bool) -> usize {
+        let mut paths = 0;
+        let path = Path::new(self.start, self.can_visit, can_visit_twice);
         let mut queue = Vec::with_capacity(32);
         queue.push(path);
-        AllPaths {
-            end: self.end,
-            g: &self.g,
-            queue,
-            path,
-            neighbors: [].iter(),
-        }
-    }
-}
-
-struct AllPaths<'g> {
-    end: u32,
-    g: &'g UndirectedCsrGraph<u32, u32>,
-    queue: Vec<Path>,
-    path: Path,
-    neighbors: std::slice::Iter<'g, u32>,
-}
-
-impl<'g> Iterator for AllPaths<'g> {
-    type Item = Path;
-
-    #[allow(clippy::semicolon_if_nothing_returned)]
-    fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            for &n in self.neighbors.by_ref() {
-                let p = self.path.append(n);
+        while let Some(p) = queue.pop() {
+            let p = p.visit();
+            let mut neighbors = self.graph[p.node as usize];
+            while neighbors != 0 {
+                let n = neighbors & neighbors.wrapping_neg();
+                neighbors ^= n;
+                let n = n.trailing_zeros() as u8;
                 if n == self.end {
-                    return Some(p);
-                }
-                if p.can_visit() {
-                    self.queue.push(p);
+                    paths += 1;
+                } else if p.can_visit(n as u8) {
+                    queue.push(p.append(n));
                 }
             }
-
-            let p = self.queue.pop()?.visit();
-            self.neighbors = self.g.neighbors(p.head).iter();
-            self.path = p;
         }
+        paths
     }
 }
 
 #[derive(Clone, Copy, Debug, Default)]
 struct Path {
-    head: u32,
+    node: u8,
     visited: u32,
 }
 
@@ -82,34 +62,20 @@ impl Path {
     const FULL: u32 = 0b10;
     const NOPE: u32 = 0b00;
 
-    fn new(head: u32, can_visit_twice: bool, g: &UndirectedCsrGraph<u32, u32>) -> Self {
-        const MAX_NODE_COUNT: u32 = 15;
-
-        assert!(
-            g.node_count() <= MAX_NODE_COUNT,
-            "can only run on {} nodes, but got {}",
-            MAX_NODE_COUNT,
-            g.node_count()
-        );
-
-        let visited = (0..g.node_count()).fold(
-            [0, Self::VISIT_TWICE][can_visit_twice as usize],
-            |visited, id| visited | ((*g.node_value(id)) << (id << 1)),
-        );
-
-        Self { head, visited }
+    fn new(node: u8, can_visit: u32, can_visit_twice: bool) -> Self {
+        let visited = can_visit | [0, Self::VISIT_TWICE][can_visit_twice as usize];
+        Self { node, visited }
     }
 
     #[must_use]
-    fn append(self, head: u32) -> Self {
-        Self { head, ..self }
+    fn append(self, node: u8) -> Self {
+        Self { node, ..self }
     }
 
-    fn can_visit(self) -> bool {
-        let Self { head, visited } = self;
-        let can_visit = (visited >> (head << 1)) & Self::MASK;
+    fn can_visit(self, node: u8) -> bool {
+        let can_visit = (self.visited >> (node << 1)) & Self::MASK;
         if can_visit == Self::ZERO {
-            (visited & Self::VISIT_TWICE) == Self::VISIT_TWICE
+            (self.visited & Self::VISIT_TWICE) == Self::VISIT_TWICE
         } else {
             can_visit != Self::NOPE
         }
@@ -117,19 +83,19 @@ impl Path {
 
     #[must_use]
     fn visit(self) -> Self {
-        let Self { head, mut visited } = self;
-        let can_visit = (visited >> (head << 1)) & Self::MASK;
+        let Self { node, mut visited } = self;
+        let can_visit = (visited >> (node << 1)) & Self::MASK;
         if can_visit == Self::ONCE {
-            visited |= Self::ZERO << (head << 1);
-            Self { head, visited }
+            visited |= Self::ZERO << (node << 1);
+            Self { node, visited }
         } else if can_visit == Self::ZERO {
             assert!(
                 visited & Self::VISIT_TWICE == Self::VISIT_TWICE,
                 "visited node too many times {}",
-                head
+                node
             );
             visited &= !Self::VISIT_TWICE;
-            Self { head, visited }
+            Self { node, visited }
         } else {
             self
         }
@@ -143,32 +109,34 @@ impl ProcessInput for Cave {
 
     fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
         let mut ids = IndexSet::new();
-        let mut edges = Vec::new();
+        let mut graph: u16x16 = Simd::from_array([0; 16]);
+
         for path in input {
-            let source = ids.insert_full(path.source).0 as u32;
-            let target = ids.insert_full(path.target).0 as u32;
-            edges.push((source, target));
+            let source = ids.insert_full(path.source).0;
+            let target = ids.insert_full(path.target).0;
+            graph[source] |= 1 << target;
+            graph[target] |= 1 << source;
         }
 
-        let node_values = ids
+        let can_visit = ids
             .iter()
             .map(|id| match id.as_str() {
                 "start" | "end" => Path::NOPE,
                 id if id.chars().all(char::is_uppercase) => Path::FULL,
                 _ => Path::ONCE,
             })
-            .collect::<Vec<_>>();
+            .enumerate()
+            .fold(0, |visited, (id, nv)| visited | (nv << (id << 1)));
 
-        let g = GraphBuilder::new()
-            .csr_layout(CsrLayout::Deduplicated)
-            .edges(edges)
-            .node_values(node_values)
-            .build();
+        let start = ids.get_index_of("start").unwrap() as u8;
+        let end = ids.get_index_of("end").unwrap() as u8;
 
-        let start = ids.get_index_of("start").unwrap() as u32;
-        let end = ids.get_index_of("end").unwrap() as u32;
-
-        Self { g, start, end }
+        Self {
+            graph,
+            start,
+            end,
+            can_visit,
+        }
     }
 }
 
