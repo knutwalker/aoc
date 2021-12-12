@@ -23,24 +23,24 @@ pub struct Cave {
 impl Cave {
     fn count_paths(self, can_visit_twice: bool) -> usize {
         fn iterate(c: &Cave, node: u8, visited: u16, twice: bool) -> usize {
-            //   graph is a [ u16 ; 16 ] where each u16 is a bitset of adjacent nodes
-            //       v is a bitset of nodes that can change their visit state (small=1, big/start=0)
-            // visited is a bitset of nodes that have been visited in the current path
+            //    graph is a [ u16 ; 16 ] where each u16 is a bitset of adjacent nodes
+            // on_visit is a bitset of nodes that can change their visit state (small=1, big/start=0)
+            //  visited is a bitset of nodes that have been visited in the current path
 
             // to get the nodes for the next iteration, we create a mask of nodes that still need
             // to be visted by negating the visted set. If we still have a second small cave visit
-            // left, we add all small nodes to the to_visit set by or-ing it with `v` (which has
-            // a 1 for every small cave).
+            // left, we add all small nodes to the to_visit set by or-ing it with `on_visit`
+            // (which has a 1 for every small cave).
             let mut to_visit = c.graph[node as usize];
             to_visit &= !visited | [0, c.on_visit][twice as usize];
 
             // iterate through the to_visit set
             let mut paths = 0;
             while to_visit != 0 {
-                // get the lowest 1 bit, HD 2-1, `x & -x`
+                // the next node is the lowest 1 bit, HD 2-1, `x & (-x)`
                 let next = to_visit & to_visit.wrapping_neg();
-                // remove the next node from the to_visit set
-                to_visit ^= next;
+                // remove the next node from the to_visit set, HD 2-1, `x & (x - 1)`
+                to_visit &= to_visit - 1;
 
                 // decode the bit position into the node id
                 let next_node = next.trailing_zeros() as u8;
