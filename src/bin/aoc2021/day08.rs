@@ -86,15 +86,15 @@ impl FromStr for Digits {
 struct Digit(u8);
 
 impl Digit {
-    fn segments_turned_on(self) -> u32 {
+    const fn segments_turned_on(self) -> u32 {
         self.0.count_ones()
     }
 
-    fn has_segments(self, n: u32) -> bool {
+    const fn has_segments(self, n: u32) -> bool {
         self.segments_turned_on() == n
     }
 
-    fn contains_segments_from(self, other: Self) -> bool {
+    const fn contains_segments_from(self, other: Self) -> bool {
         self.0 & other.0 == other.0
     }
 }
