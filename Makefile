@@ -50,6 +50,11 @@ README.md: README.tpl.md aoc2020_bench.md aoc2021_bench.md
 
 # Download inputs
 
-d%:
+i%:
 > curl --cookie "session=$$(cat .sessioncookie)" "https://adventofcode.com/2021/day/$*/input" > src/bin/$(APP)/input/day$*.txt
 > bat src/bin/$(APP)/input/day$*.txt
+
+# Generate source file
+d%:
+> m4 -D day=day$* day.tpl.rs > src/bin/$(APP)/day$*.rs
+> code src/bin/$(APP)/day$*.rs
