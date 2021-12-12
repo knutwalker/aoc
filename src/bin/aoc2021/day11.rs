@@ -18,6 +18,18 @@ fn part2(octo: &mut Octo) -> usize {
         .unwrap()
 }
 
+#[cfg(test)]
+fn part1_standalone(mut octo: Octo) -> usize {
+    (0..100).map(|_| octo.flash()).sum()
+}
+
+#[cfg(test)]
+fn part2_standalone(mut octo: Octo) -> usize {
+    (1..usize::MAX)
+        .find(|round| octo.flash() == SIZE * SIZE)
+        .unwrap()
+}
+
 const SIZE: usize = 10;
 
 #[derive(Clone, Copy, Debug)]
@@ -79,7 +91,8 @@ impl PuzzleInput for Octo {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aoc::SolutionExt;
+    use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test_ex() {
@@ -105,5 +118,24 @@ mod tests {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 1661);
         assert_eq!(res2, 334);
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| part1_standalone(input));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| part2_standalone(input));
     }
 }

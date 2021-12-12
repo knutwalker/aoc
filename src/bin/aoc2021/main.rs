@@ -4,7 +4,8 @@
     control_flow_enum,
     drain_filter,
     iter_partition_in_place,
-    let_else
+    let_else,
+    test
 )]
 #![warn(
     clippy::all,
@@ -25,17 +26,19 @@
 
 #[macro_use]
 extern crate aoc;
+#[allow(unused_extern_crates)]
+extern crate test;
 
 aoc_main!(
-    1 => day01,
-    2 => day02,
-    3 => day03,
-    4 => day04,
-    5 => day05,
-    6 => day06,
-    7 => day07,
-    8 => day08,
-    9 => day09,
+    1 => day1,
+    2 => day2,
+    3 => day3,
+    4 => day4,
+    5 => day5,
+    6 => day6,
+    7 => day7,
+    8 => day8,
+    9 => day9,
     10 => day10,
     11 => day11,
     12 => day12,

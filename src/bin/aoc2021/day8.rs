@@ -5,7 +5,7 @@ register!(
     "input/day8.txt";
     (input: input!(parse Input)) -> usize {
         part1(&input);
-        part2(&mut input);
+        part2(&input);
     }
 );
 
@@ -17,10 +17,10 @@ fn part1(items: &[Input]) -> usize {
         .count()
 }
 
-fn part2(items: &mut [Input]) -> usize {
+fn part2(items: &[Input]) -> usize {
     items
-        .iter_mut()
-        .map(|Input { test, output }| {
+        .iter()
+        .map(|Input { mut test, output }| {
             let mut num = [Digit(0); 10];
 
             // identifiable by number of segments alone
@@ -57,13 +57,18 @@ pub struct Input {
     output: Digits,
 }
 
-#[derive(Clone, Debug)]
-struct Digits(Vec<Digit>);
+#[derive(Clone, Copy, Debug)]
+struct Digits([Digit; 10], u8);
 
 impl Digits {
     fn pop(&mut self, select: impl Fn(Digit) -> bool) -> Digit {
         let pos = self.0.iter().copied().position(select).unwrap();
-        self.0.swap_remove(pos)
+        self.1 -= 1;
+        let last = self.1 as usize;
+        if pos != last {
+            self.0.swap(pos, last);
+        }
+        self.0[last]
     }
 
     fn decode(&self, coding: &[Digit]) -> usize {
@@ -78,7 +83,13 @@ impl FromStr for Digits {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(s.split_ascii_whitespace().map(Digit::from).collect()))
+        let mut digits = s
+            .split_ascii_whitespace()
+            .map(Digit::from)
+            .collect::<Vec<_>>();
+        let len = digits.len() as u8;
+        digits.resize(10, Digit(0));
+        Ok(Self(digits.try_into().unwrap(), len))
     }
 }
 
@@ -108,7 +119,8 @@ impl From<&'_ str> for Digit {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aoc::SolutionExt;
+    use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test_small() {
@@ -142,5 +154,24 @@ mod tests {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 534);
         assert_eq!(res2, 1_070_188);
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| part1(&input));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| part2(&input));
     }
 }
