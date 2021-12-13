@@ -1,5 +1,6 @@
 use aoc::ProcessInput;
 use indexmap::IndexSet;
+use std::{convert::Infallible, str::FromStr};
 
 type Input = Cave;
 type Output = usize;
@@ -76,13 +77,11 @@ impl Cave {
 }
 
 impl ProcessInput for Cave {
-    type In = input!(parse parse::Connection);
+    type In = input!(parse Connection);
 
     type Out = Self;
 
     fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
-        use parse::CaveType;
-
         let mut ids = IndexSet::new();
         let mut graph = [0; 16];
 
@@ -114,27 +113,42 @@ impl ProcessInput for Cave {
     }
 }
 
-#[allow(clippy::use_self)]
-mod parse {
-    use parse_display::FromStr;
+#[derive(Clone, Debug)]
+pub struct Connection {
+    source: CaveType,
+    target: CaveType,
+}
 
-    #[derive(Clone, Debug, FromStr)]
-    #[display("{source}-{target}")]
-    pub struct Connection {
-        pub(super) source: CaveType,
-        pub(super) target: CaveType,
+impl FromStr for Connection {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (source, target) = s.split_once('-').unwrap();
+        Ok(Self {
+            source: source.parse()?,
+            target: target.parse()?,
+        })
     }
+}
 
-    #[derive(Clone, Debug, FromStr, PartialEq, Eq, Hash)]
-    pub enum CaveType {
-        #[display("start")]
-        Start,
-        #[display("end")]
-        End,
-        #[from_str(regex = "(?P<0>[a-z]+)")]
-        Small(String),
-        #[from_str(regex = "(?P<0>[A-Z]+)")]
-        Big(String),
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum CaveType {
+    Start,
+    End,
+    Small(String),
+    Big(String),
+}
+
+impl FromStr for CaveType {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "start" => Self::Start,
+            "end" => Self::End,
+            small if small.as_bytes()[0].is_ascii_lowercase() => Self::Small(small.to_string()),
+            big => Self::Big(big.to_string()),
+        })
     }
 }
 

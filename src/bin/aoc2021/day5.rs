@@ -1,4 +1,4 @@
-use parse_display::FromStr;
+use std::{num::ParseIntError, str::FromStr};
 
 register!(
     "input/day5.txt";
@@ -33,13 +33,29 @@ fn solve(items: &[VentLine], include_diagonal: bool) -> usize {
     covered.into_iter().filter(|c| *c > 1).count()
 }
 
-#[derive(Clone, Copy, Debug, FromStr)]
-#[display("{x1},{y1} -> {x2},{y2}")]
+#[derive(Clone, Copy, Debug)]
 pub struct VentLine {
     x1: i32,
     y1: i32,
     x2: i32,
     y2: i32,
+}
+
+impl FromStr for VentLine {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (c1, c2) = s.split_once(" -> ").unwrap();
+        let (x1, y1) = c1.split_once(',').unwrap();
+        let (x2, y2) = c2.split_once(',').unwrap();
+
+        Ok(Self {
+            x1: x1.parse()?,
+            y1: y1.parse()?,
+            x2: x2.parse()?,
+            y2: y2.parse()?,
+        })
+    }
 }
 
 #[cfg(test)]

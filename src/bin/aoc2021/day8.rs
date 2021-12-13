@@ -1,4 +1,3 @@
-use parse_display::FromStr;
 use std::{convert::Infallible, str::FromStr};
 
 register!(
@@ -50,11 +49,22 @@ fn part2(items: &[Input]) -> usize {
         .sum()
 }
 
-#[derive(Clone, Debug, FromStr)]
-#[display("{test} | {output}")]
+#[derive(Clone, Debug)]
 pub struct Input {
     test: Digits,
     output: Digits,
+}
+
+impl FromStr for Input {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (text, output) = s.split_once(" | ").unwrap();
+        Ok(Self {
+            test: text.parse()?,
+            output: output.parse()?,
+        })
+    }
 }
 
 #[derive(Clone, Copy, Debug)]

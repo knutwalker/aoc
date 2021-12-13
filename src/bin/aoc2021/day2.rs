@@ -1,5 +1,4 @@
-use parse_display::FromStr;
-use std::convert::Infallible;
+use std::{convert::Infallible, num::ParseIntError, str::FromStr};
 
 register!(
     "input/day2.txt";
@@ -9,7 +8,6 @@ register!(
     }
 );
 
-#[allow(clippy::use_self)]
 #[derive(Clone, Copy, Debug)]
 pub enum Direction {
     Forward,
@@ -17,7 +15,7 @@ pub enum Direction {
     Up,
 }
 
-impl std::str::FromStr for Direction {
+impl FromStr for Direction {
     type Err = Infallible;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s {
@@ -29,9 +27,17 @@ impl std::str::FromStr for Direction {
     }
 }
 
-#[derive(Clone, Copy, Debug, FromStr)]
-#[display("{0} {1}")]
+#[derive(Clone, Copy, Debug)]
 pub struct Command(Direction, i64);
+
+impl FromStr for Command {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (direction, amount) = s.split_once(' ').unwrap();
+        Ok(Self(direction.parse().unwrap(), amount.parse()?))
+    }
+}
 
 fn part1(items: &[Command]) -> i64 {
     let (mut horizontal, mut depth) = (0, 0);
