@@ -43,7 +43,7 @@ mod tests {
     #[bench]
     fn bench_parsing(b: &mut Bencher) {
         let input = Solver::puzzle_input();
-        b.bytes = input.len() as u64;
+        b.bytes = `input.len()' as u64;
         b.iter(|| Solver::parse_input(input));
     }
 

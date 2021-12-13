@@ -56,5 +56,5 @@ i%:
 
 # Generate source file
 d%:
-> m4 -D day=day$* day.tpl.rs > src/bin/$(APP)/day$*.rs
+> m4 -D day=day$* day.rs.tpl > src/bin/$(APP)/day$*.rs
 > code src/bin/$(APP)/day$*.rs
