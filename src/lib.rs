@@ -226,12 +226,35 @@ impl Display for ResultLine {
             let printed_width = self.prefix.chars().count() + duration.chars().count();
             let dots = max_width.saturating_sub(printed_width).saturating_sub(2);
             let dots = ".".repeat(dots);
+
             write!(
                 f,
-                " {} {}",
-                dots.if_supports_color(Stdout, |t| t.bright_black()),
-                solution.if_supports_color(Stdout, |t| t.bold())
+                " {} ",
+                dots.if_supports_color(Stdout, |t| t.bright_black())
             )?;
+
+            let solution = solution.to_string();
+            let mut solution = solution.lines().filter(|l| !l.is_empty());
+
+            write!(
+                f,
+                "{}",
+                solution
+                    .next()
+                    .unwrap()
+                    .if_supports_color(Stdout, |t| t.bold())
+            )?;
+
+            for line in solution {
+                writeln!(f)?;
+                write!(
+                    f,
+                    "{:>w$}    {}",
+                    "",
+                    line.if_supports_color(Stdout, |t| t.bold()),
+                    w = max_width
+                )?;
+            }
         }
 
         Ok(())
