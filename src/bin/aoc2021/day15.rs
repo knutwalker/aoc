@@ -1,11 +1,8 @@
-use fxhash::FxBuildHasher;
-use graph::prelude::{
-    CsrLayout, Graph, GraphBuilder, Idx, Target, UndirectedCsrGraph, UndirectedNeighborsWithValues,
-};
+use fxhash::{FxBuildHasher, FxHashSet};
+use priority_queue::PriorityQueue;
 use std::cmp::Reverse;
 
 type Input = Vec<u8>;
-type G = UndirectedCsrGraph<u32, (), u32>;
 type Output = u32;
 
 register!(
@@ -17,86 +14,58 @@ register!(
 );
 
 fn part1(items: &[Input]) -> Output {
-    let g = graph(items, 1);
-    dijkstra(&g, 0, g.node_count() - 1)
+    dijkstra(items, 1, (0, 0))
 }
 
 fn part2(items: &[Input]) -> Output {
-    let g = graph(items, 5);
-    dijkstra(&g, 0, g.node_count() - 1)
+    dijkstra(items, 5, (0, 0))
 }
 
-fn graph(input: &[Vec<u8>], repeats: u32) -> G {
-    let mut edges = Vec::with_capacity(input.len().pow(2) * repeats.pow(2).index() * 4);
-    let h = input.len() as u32;
-    let w = h;
+fn dijkstra(g: &[Vec<u8>], scale: u16, start: (u16, u16)) -> u32 {
+    let mut visited = FxHashSet::default();
+    let size = g.len() as u16;
+    let max = size * scale;
 
-    let max_h = h * repeats;
-    let max_w = w * repeats;
+    let end = (max - 1, max - 1);
 
-    for xr in 0..repeats {
-        for xc in 0..repeats {
-            for (row, current_row) in input.iter().enumerate() {
-                let row = xr * h + (row as u32);
-                for (col, danger) in current_row.iter().map(|b| u32::from(b - b'0')).enumerate() {
-                    let col = xc * w + (col as u32);
-                    let mut danger = danger + xr + xc;
+    let mut q = PriorityQueue::with_capacity_and_hasher(g.len(), FxBuildHasher::default());
+    q.push(start, Reverse(0));
+
+    while let Some((node @ (row, col), dist)) = q.pop() {
+        if node == end {
+            return dist.0;
+        }
+        visited.insert(node);
+
+        for (dr, dc) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
+            let nr = row.wrapping_add_signed(dr);
+            let nc = col.wrapping_add_signed(dc);
+            if nr < max && nc < max {
+                let target = (nr, nc);
+                if !visited.contains(&target) {
+                    let mut danger =
+                        u16::from(g[(nr % size) as usize][(nc % size) as usize] - b'0');
+                    danger += (nr / size) + (nc / size);
                     if danger > 9 {
                         danger -= 9;
                     }
 
-                    let target = (row * max_w + col) as u32;
-
-                    for (dr, dc) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
-                        let nr = row.wrapping_add_signed(dr);
-                        let nc = col.wrapping_add_signed(dc);
-                        if nr < max_h && nc < max_w {
-                            let source = (nr * max_w + nc) as u32;
-                            edges.push((source, target, danger));
+                    let dist = dist.0 + u32::from(danger);
+                    match q.get_priority(&target) {
+                        Some(prev) if dist < prev.0 => {
+                            let _ = q.change_priority(&target, Reverse(dist));
                         }
+                        None => {
+                            let _ = q.push(target, Reverse(dist));
+                        }
+                        Some(_) => {}
                     }
                 }
             }
         }
     }
 
-    GraphBuilder::new()
-        .csr_layout(CsrLayout::Deduplicated)
-        .edges_with_values(edges)
-        .build()
-}
-
-fn dijkstra(g: &G, source: u32, target: u32) -> u32 {
-    let mut visited = vec![false; g.node_count().index()];
-
-    let mut q = priority_queue::PriorityQueue::with_capacity_and_hasher(
-        g.node_count().index(),
-        FxBuildHasher::default(),
-    );
-    q.push(source, Reverse(0));
-
-    while let Some((node, dist)) = q.pop() {
-        if node == target {
-            return dist.0;
-        }
-        visited[node.index()] = true;
-        for Target { target, value } in g.neighbors_with_values(node) {
-            if !visited[target.index()] {
-                let dist = dist.0 + *value;
-                match q.get_priority(target) {
-                    Some(prev) if dist < prev.0 => {
-                        let _ = q.change_priority(target, Reverse(dist));
-                    }
-                    None => {
-                        let _ = q.push(*target, Reverse(dist));
-                    }
-                    Some(_) => {}
-                }
-            }
-        }
-    }
-
-    unreachable!("No path from {} to {}", source, target)
+    unreachable!("No path")
 }
 
 #[cfg(test)]
