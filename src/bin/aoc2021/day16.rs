@@ -1,5 +1,10 @@
 use bitvec::{field::BitField, order::Msb0, slice::BitSlice, vec::BitVec};
-use std::{cmp::Ordering, convert::Infallible, str::FromStr};
+use std::{
+    cmp::Ordering,
+    convert::Infallible,
+    ops::{Add, Mul},
+    str::FromStr,
+};
 
 type Output = u64;
 
@@ -12,58 +17,17 @@ register!(
 );
 
 fn part1(packet: &Packet) -> Output {
-    packet.add_versions()
+    packet.version
 }
 
 fn part2(packet: &Packet) -> Output {
-    packet.eval()
+    packet.val
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Packet {
-    version: u8,
-    val: Val,
-}
-
-impl Packet {
-    fn add_versions(&self) -> Output {
-        match &self.val {
-            Val::Lit(_) => Output::from(self.version),
-            Val::Op(_, args) => {
-                args.iter().map(Self::add_versions).sum::<Output>() + Output::from(self.version)
-            }
-        }
-    }
-
-    fn eval(&self) -> Output {
-        match &self.val {
-            Val::Lit(v) => *v,
-            Val::Op(op, args) => match op {
-                0 => args.iter().map(Self::eval).sum(),
-                1 => args.iter().map(Self::eval).product(),
-                2 => args.iter().map(Self::eval).min().unwrap(),
-                3 => args.iter().map(Self::eval).max().unwrap(),
-                op @ (5 | 6 | 7) => {
-                    let cmp = match op {
-                        5 => Ordering::Greater,
-                        6 => Ordering::Less,
-                        _ => Ordering::Equal,
-                    };
-                    match &args[..] {
-                        [fst, snd] => (fst.eval().cmp(&snd.eval()) == cmp) as _,
-                        _ => unreachable!("invalid number of args for op {}: {}", args.len(), op),
-                    }
-                }
-                op => unreachable!("invalid op: {}", op),
-            },
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum Val {
-    Lit(u64),
-    Op(u8, Vec<Packet>),
+    version: Output,
+    val: Output,
 }
 
 impl FromStr for Packet {
@@ -89,70 +53,81 @@ fn decode(input: &Bits) -> (Packet, &Bits) {
     let (version, input) = input.split_at(3);
     let (type_id, input) = input.split_at(3);
 
-    let (val, input) = match type_id.load_be::<u8>() {
-        4 => {
-            let (result, input) = decode_literal(input);
-            (Val::Lit(result), input)
-        }
-        op => {
-            let (result, input) = decode_operator(input);
-            (Val::Op(op, result), input)
-        }
-    };
+    let version = version.load_be();
 
-    (
-        Packet {
-            version: version.load_be(),
-            val,
-        },
-        input,
-    )
+    match type_id.load_be::<u8>() {
+        0 => decode_operator(input, version, 0, Output::add),
+        1 => decode_operator(input, version, 1, Output::mul),
+        2 => decode_operator(input, version, Output::MAX, Output::min),
+        3 => decode_operator(input, version, Output::MIN, Output::max),
+        4 => decode_literal(input, version),
+        op @ (5 | 6 | 7) => {
+            let cmp = match op {
+                5 => Ordering::Greater,
+                6 => Ordering::Less,
+                _ => Ordering::Equal,
+            };
+            decode_operator(input, version, Output::MAX, move |a, b| {
+                if a == Output::MAX {
+                    b
+                } else {
+                    (a.cmp(&b) == cmp) as _
+                }
+            })
+        }
+        op => unreachable!("invalid op: {}", op),
+    }
 }
 
-fn decode_literal(input: &Bits) -> (Output, &Bits) {
-    let mut result = BitVec::<Msb0, Output>::new();
+fn decode_literal(input: &Bits, version: Output) -> (Packet, &Bits) {
+    let mut val = BitVec::<Msb0, Output>::new();
 
     for (idx, chunk) in input.chunks(5).enumerate() {
-        result.extend(&chunk[1..]);
+        val.extend(&chunk[1..]);
         if !chunk[0] {
-            let result = result.load_be::<Output>();
+            let val = val.load_be::<Output>();
             let consumed = (idx + 1) * 5;
             let input = &input[consumed..];
-            return (result, input);
+            return (Packet { version, val }, input);
         }
     }
 
     unreachable!("Invalid literal");
 }
 
-fn decode_operator(input: &Bits) -> (Vec<Packet>, &Bits) {
+fn decode_operator(
+    input: &Bits,
+    mut version: Output,
+    zero: Output,
+    op: impl Fn(Output, Output) -> Output,
+) -> (Packet, &Bits) {
     if input[0] {
         let (length, mut input) = input[1..].split_at(11);
         let length = length.load_be::<usize>();
 
-        let mut results = Vec::with_capacity(length);
-
+        let mut val = zero;
         for _ in 0..length {
-            let (result, remaining) = decode(input);
-            results.push(result);
+            let (packet, remaining) = decode(input);
+            version += packet.version;
+            val = op(val, packet.val);
             input = remaining;
         }
 
-        (results, input)
+        (Packet { version, val }, input)
     } else {
         let (length, input) = input[1..].split_at(15);
         let length = length.load_be::<usize>();
-
         let (mut subs, input) = input.split_at(length);
-        let mut results = Vec::new();
 
+        let mut val = zero;
         while !subs.is_empty() {
-            let (result, remaining) = decode(subs);
-            results.push(result);
+            let (packet, remaining) = decode(subs);
+            version += packet.version;
+            val = op(val, packet.val);
             subs = remaining;
         }
 
-        (results, input)
+        (Packet { version, val }, input)
     }
 }
 
@@ -161,70 +136,6 @@ mod tests {
     use super::*;
     use aoc::{Solution, SolutionExt};
     use test::Bencher;
-
-    #[test]
-    fn test_parse1() {
-        let result = Solver::parse_input("D2FE28");
-        assert_eq!(
-            Packet {
-                version: 6,
-                val: Val::Lit(2021)
-            },
-            result
-        );
-    }
-
-    #[test]
-    fn test_parse2() {
-        let result = Solver::parse_input("38006F45291200");
-        assert_eq!(
-            Packet {
-                version: 1,
-                val: Val::Op(
-                    6,
-                    vec![
-                        Packet {
-                            version: 6,
-                            val: Val::Lit(10)
-                        },
-                        Packet {
-                            version: 2,
-                            val: Val::Lit(20)
-                        }
-                    ]
-                )
-            },
-            result
-        );
-    }
-
-    #[test]
-    fn test_parse3() {
-        let result = Solver::parse_input("EE00D40C823060");
-        assert_eq!(
-            Packet {
-                version: 7,
-                val: Val::Op(
-                    3,
-                    vec![
-                        Packet {
-                            version: 2,
-                            val: Val::Lit(1)
-                        },
-                        Packet {
-                            version: 4,
-                            val: Val::Lit(2)
-                        },
-                        Packet {
-                            version: 1,
-                            val: Val::Lit(3)
-                        }
-                    ]
-                )
-            },
-            result
-        );
-    }
 
     #[test]
     fn test_ex_part1() {
