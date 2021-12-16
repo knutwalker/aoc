@@ -1,4 +1,5 @@
 #![feature(
+    array_chunks,
     array_windows,
     bool_to_option,
     control_flow_enum,

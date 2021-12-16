@@ -9,10 +9,10 @@ publish = false
 default-run = "aoc2021"
 
 [dependencies]
+bitvec = "0.22.3"
 derive_more = { version = "0.99.17", features = ["deref", "deref_mut", "add"], default-features = false }
 disjoint-sets = "0.4.2"
 fxhash = "0.2.1"
-graph = "0.1.6"
 humantime = "2.1.0"
 indexmap = "1.7.0"
 num_enum = "0.5.4"
@@ -29,7 +29,7 @@ tap = "1.0.1"
 # eyre = "0.6.5"
 # fancy-regex = "0.7.1"
 # fastrand = "1.5.0"
-# graph = "0.1.5"
+# graph = "0.1.6"
 # itertools = "0.10.1"
 # num = "0.4.0"
 # once_cell = "1.8.0"
