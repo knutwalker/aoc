@@ -1,4 +1,4 @@
-use bitvec::{field::BitField, order::Msb0, slice::BitSlice, vec::BitVec};
+use bitvec::{field::BitField, mem::BitMemory, order::Msb0, slice::BitSlice, vec::BitVec};
 use std::{
     cmp::Ordering,
     convert::Infallible,
@@ -30,6 +30,94 @@ pub struct Packet {
     val: Output,
 }
 
+#[derive(Debug)]
+struct Input<'a>(&'a Bits);
+
+impl<'a> Input<'a> {
+    fn load<V: BitMemory>(&mut self, num_bits: usize) -> V {
+        let (val, input) = self.0.split_at(num_bits);
+        self.0 = input;
+        val.load_be()
+    }
+
+    fn read(&mut self, num_bits: usize) -> Self {
+        let (val, input) = self.0.split_at(num_bits);
+        self.0 = input;
+        Self(val)
+    }
+
+    fn decode(&mut self) -> Packet {
+        let version = self.load(3);
+        let type_id = self.load::<u8>(3);
+
+        match type_id {
+            0 => self.decode_operator(version, 0, Output::add),
+            1 => self.decode_operator(version, 1, Output::mul),
+            2 => self.decode_operator(version, Output::MAX, Output::min),
+            3 => self.decode_operator(version, Output::MIN, Output::max),
+            4 => self.decode_literal(version),
+            op @ (5 | 6 | 7) => {
+                let cmp = match op {
+                    5 => Ordering::Greater,
+                    6 => Ordering::Less,
+                    _ => Ordering::Equal,
+                };
+                self.decode_operator(version, Output::MAX, move |a, b| {
+                    if a == Output::MAX {
+                        b
+                    } else {
+                        (a.cmp(&b) == cmp) as _
+                    }
+                })
+            }
+            op => unreachable!("invalid op: {}", op),
+        }
+    }
+
+    fn decode_operator(
+        &mut self,
+        mut version: Output,
+        mut val: Output,
+        op: impl Fn(Output, Output) -> Output,
+    ) -> Packet {
+        if self.read(1).0[0] {
+            let length = self.load::<usize>(11);
+
+            for _ in 0..length {
+                let packet = self.decode();
+                version += packet.version;
+                val = op(val, packet.val);
+            }
+        } else {
+            let length = self.load::<usize>(15);
+            let mut subs = self.read(length);
+
+            while !subs.0.is_empty() {
+                let packet = subs.decode();
+                version += packet.version;
+                val = op(val, packet.val);
+            }
+        };
+        Packet { version, val }
+    }
+
+    fn decode_literal(&mut self, version: Output) -> Packet {
+        let mut val = BitVec::<Msb0, Output>::new();
+
+        for (idx, chunk) in self.0.chunks(5).enumerate() {
+            val.extend(&chunk[1..]);
+            if !chunk[0] {
+                let val = val.load_be::<Output>();
+                let consumed = (idx + 1) * 5;
+                self.0 = &self.0[consumed..];
+                return Packet { version, val };
+            }
+        }
+
+        unreachable!("Invalid literal");
+    }
+}
+
 impl FromStr for Packet {
     type Err = Infallible;
 
@@ -43,93 +131,11 @@ impl FromStr for Packet {
                 Some(c1 << 4 | c2)
             })
             .collect::<BitVec<Msb0, _>>();
-        Ok(decode(&bits).0)
+        Ok(Input(&bits).decode())
     }
 }
 
 type Bits = BitSlice<Msb0, u8>;
-
-fn decode(input: &Bits) -> (Packet, &Bits) {
-    let (version, input) = input.split_at(3);
-    let (type_id, input) = input.split_at(3);
-
-    let version = version.load_be();
-
-    match type_id.load_be::<u8>() {
-        0 => decode_operator(input, version, 0, Output::add),
-        1 => decode_operator(input, version, 1, Output::mul),
-        2 => decode_operator(input, version, Output::MAX, Output::min),
-        3 => decode_operator(input, version, Output::MIN, Output::max),
-        4 => decode_literal(input, version),
-        op @ (5 | 6 | 7) => {
-            let cmp = match op {
-                5 => Ordering::Greater,
-                6 => Ordering::Less,
-                _ => Ordering::Equal,
-            };
-            decode_operator(input, version, Output::MAX, move |a, b| {
-                if a == Output::MAX {
-                    b
-                } else {
-                    (a.cmp(&b) == cmp) as _
-                }
-            })
-        }
-        op => unreachable!("invalid op: {}", op),
-    }
-}
-
-fn decode_literal(input: &Bits, version: Output) -> (Packet, &Bits) {
-    let mut val = BitVec::<Msb0, Output>::new();
-
-    for (idx, chunk) in input.chunks(5).enumerate() {
-        val.extend(&chunk[1..]);
-        if !chunk[0] {
-            let val = val.load_be::<Output>();
-            let consumed = (idx + 1) * 5;
-            let input = &input[consumed..];
-            return (Packet { version, val }, input);
-        }
-    }
-
-    unreachable!("Invalid literal");
-}
-
-fn decode_operator(
-    input: &Bits,
-    mut version: Output,
-    zero: Output,
-    op: impl Fn(Output, Output) -> Output,
-) -> (Packet, &Bits) {
-    if input[0] {
-        let (length, mut input) = input[1..].split_at(11);
-        let length = length.load_be::<usize>();
-
-        let mut val = zero;
-        for _ in 0..length {
-            let (packet, remaining) = decode(input);
-            version += packet.version;
-            val = op(val, packet.val);
-            input = remaining;
-        }
-
-        (Packet { version, val }, input)
-    } else {
-        let (length, input) = input[1..].split_at(15);
-        let length = length.load_be::<usize>();
-        let (mut subs, input) = input.split_at(length);
-
-        let mut val = zero;
-        while !subs.is_empty() {
-            let (packet, remaining) = decode(subs);
-            version += packet.version;
-            val = op(val, packet.val);
-            subs = remaining;
-        }
-
-        (Packet { version, val }, input)
-    }
-}
 
 #[cfg(test)]
 mod tests {
