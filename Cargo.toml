@@ -10,7 +10,7 @@ default-run = "aoc2021"
 
 [dependencies]
 bitvec = "0.22.3"
-derive_more = { version = "0.99.17", features = ["deref", "deref_mut", "add"], default-features = false }
+derive_more = { version = "0.99.17", features = ["deref", "deref_mut", "add", "add_assign"], default-features = false }
 disjoint-sets = "0.4.2"
 fxhash = "0.2.1"
 humantime = "2.1.0"
