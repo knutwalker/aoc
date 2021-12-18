@@ -3,7 +3,7 @@ use std::{convert::Infallible, fmt::Display, str::FromStr};
 use tap::Tap;
 
 type Input = Num;
-type Output = u64;
+type Output = u32;
 
 register!(
     "input/day18.txt";
@@ -118,8 +118,8 @@ impl Num {
 
     fn magnitude(self) -> Output {
         match self {
-            Num::Reg(v) => Output::from(v),
-            Num::Pair([l, r]) => 3 * l.magnitude() + 2 * r.magnitude(),
+            Self::Reg(v) => Output::from(v),
+            Self::Pair([l, r]) => 3 * l.magnitude() + 2 * r.magnitude(),
         }
     }
 }
@@ -186,8 +186,8 @@ impl FromStr for Num {
 impl Display for Num {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Num::Reg(v) => write!(f, "{}", v),
-            Num::Pair([lhs, rhs]) => write!(f, "[{},{}]", lhs, rhs),
+            Self::Reg(v) => write!(f, "{}", v),
+            Self::Pair([lhs, rhs]) => write!(f, "[{},{}]", lhs, rhs),
         }
     }
 }
