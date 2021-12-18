@@ -10,6 +10,7 @@ default-run = "aoc2021"
 
 [dependencies]
 bitvec = "0.22.3"
+const-combinations = "2.0.3"
 derive_more = { version = "0.99.17", features = ["deref", "deref_mut", "add", "add_assign"], default-features = false }
 disjoint-sets = "0.4.2"
 fxhash = "0.2.1"
@@ -23,7 +24,6 @@ tap = "1.0.1"
 
 # bit-set = "0.5.2"
 # chrono = "0.4.19"
-# const-combinations = "2.0.3"
 # const_format = "0.2.22"
 # either = "1.6.1"
 # eyre = "0.6.5"

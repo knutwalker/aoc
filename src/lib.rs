@@ -6,6 +6,18 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[macro_export]
+macro_rules! poop {
+    ($($arg:tt)*) => {
+        {
+            #[cfg(debug_assertions)]
+            {
+                println!($($arg)*);
+            }
+        }
+    };
+}
+
 pub trait MedianExt<T> {
     fn median(self) -> T;
 }

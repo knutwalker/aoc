@@ -16,6 +16,7 @@ name = "aoc"
 version = "0.1.0"
 dependencies = [
  "bitvec",
+ "const-combinations",
  "derive_more",
  "disjoint-sets",
  "fxhash",
@@ -62,6 +63,12 @@ name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
+
+[[package]]
+name = "const-combinations"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbf610e41f12082feacc572e6ae6ee123e36dd18d9d1f92a1327bddeefda5aa1"
 
 [[package]]
 name = "derivative"
