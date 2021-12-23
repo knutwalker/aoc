@@ -45,8 +45,9 @@ fn occupied_seats(x: usize, y: usize, limit: usize, rows: &[Vec<u8>]) -> usize {
                         .take(limit)
                         .map(|(x, y)| rows[y][x])
                         .take_while(|&s| s != b'L')
-                        .any(|s| s == b'#') as usize
+                        .any(|s| s == b'#')
                 })
+                .map(usize::from)
         })
         .sum()
 }

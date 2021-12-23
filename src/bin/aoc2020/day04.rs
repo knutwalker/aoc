@@ -13,11 +13,19 @@ register!(
 );
 
 fn part1(passports: &[Passport]) -> usize {
-    passports.iter().map(|p| p.is_valid_pt1() as usize).sum()
+    passports
+        .iter()
+        .map(Passport::is_valid_pt1)
+        .map(usize::from)
+        .sum()
 }
 
 fn part2(passports: &[Passport]) -> usize {
-    passports.iter().map(|p| p.is_valid_pt2() as usize).sum()
+    passports
+        .iter()
+        .map(Passport::is_valid_pt2)
+        .map(usize::from)
+        .sum()
 }
 
 #[derive(Default, Debug)]

@@ -32,8 +32,8 @@ impl Cave {
             // to be visted by negating the visted set. If we still have a second small cave visit
             // left, we add all small nodes to the to_visit set by or-ing it with `on_visit`
             // (which has a 1 for every small cave).
-            let mut to_visit = c.graph[node as usize];
-            to_visit &= !visited | [0, c.on_visit][twice as usize];
+            let mut to_visit = c.graph[usize::from(node)];
+            to_visit &= !visited | [0, c.on_visit][usize::from(twice)];
 
             // iterate through the to_visit set
             let mut paths = 0;

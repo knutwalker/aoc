@@ -90,7 +90,7 @@ impl FromStr for In {
         } else {
             let (axis, line) = s.trim_start_matches("fold along ").split_once('=').unwrap();
             Self::Fold {
-                axis: (axis == "y") as usize,
+                axis: usize::from(axis == "y"),
                 line: line.parse()?,
             }
         })

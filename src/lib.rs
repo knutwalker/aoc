@@ -53,6 +53,12 @@ pub trait ProcessInput {
     fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out;
 }
 
+impl PuzzleInput for () {
+    type Out = Self;
+
+    fn from_input(_input: &str) -> Self::Out {}
+}
+
 pub struct Blocks<T>(PhantomData<T>);
 
 impl<T> PuzzleInput for Blocks<T>

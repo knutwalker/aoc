@@ -48,7 +48,7 @@ fn roll_die(die: &mut impl Iterator<Item = u16>) -> u16 {
 }
 
 #[inline]
-fn move_player(pos: u16, score: u16, roll: u16) -> (u16, u16) {
+const fn move_player(pos: u16, score: u16, roll: u16) -> (u16, u16) {
     let pos = (pos + roll) % 10;
     let score = score + pos + 1;
     (pos, score)
@@ -111,7 +111,7 @@ struct Counts {
 }
 
 impl Counts {
-    fn empty() -> Self {
+    const fn empty() -> Self {
         Self {
             playing: [0; 210],
             wins: 0,

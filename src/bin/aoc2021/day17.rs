@@ -16,7 +16,7 @@ fn part1(input: &[Output]) -> Output {
     input.iter().copied().max().unwrap()
 }
 
-fn part2(input: &[Output]) -> Output {
+const fn part2(input: &[Output]) -> Output {
     input.len() as i32
 }
 
@@ -62,7 +62,7 @@ pub struct Target {
 }
 
 impl ProcessInput for Target {
-    type In = input!(first input!(parse Target));
+    type In = input!(first input!(parse Self));
 
     type Out = Vec<Output>;
 

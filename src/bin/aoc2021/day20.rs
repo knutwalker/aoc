@@ -69,14 +69,14 @@ impl Input {
                             self.infinity
                         }
                     })
-                    .fold(0, |code, px| (code << 1) | (px as usize));
+                    .fold(0, |code, px| (code << 1) | usize::from(px));
                 if self.algorithm[code] {
                     image.insert((x, y));
                 }
             }
         }
 
-        let infinity = self.algorithm[511 * self.infinity as usize];
+        let infinity = self.algorithm[511 * usize::from(self.infinity)];
         Self {
             algorithm: Rc::clone(&self.algorithm),
             size: (min, max),

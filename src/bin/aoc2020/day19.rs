@@ -51,7 +51,7 @@ where
         .map(|msg| {
             let bs = msg.as_bytes();
             let (matches, rest) = check(rules, bs);
-            (matches && rest.is_empty()) as Output
+            Output::from(matches && rest.is_empty())
         })
         .sum()
 }

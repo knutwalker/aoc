@@ -16,11 +16,11 @@ register!(
     }
 );
 
-fn part1(packet: &Packet) -> Output {
+const fn part1(packet: &Packet) -> Output {
     packet.version
 }
 
-fn part2(packet: &Packet) -> Output {
+const fn part2(packet: &Packet) -> Output {
     packet.val
 }
 
@@ -66,7 +66,7 @@ impl<'a> Input<'a> {
                     if a == Output::MAX {
                         b
                     } else {
-                        (a.cmp(&b) == cmp) as _
+                        u64::from(a.cmp(&b) == cmp)
                     }
                 })
             }

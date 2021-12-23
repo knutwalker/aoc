@@ -82,13 +82,16 @@ impl PuzzleInput for Map {
             while idx < unmapped_scanners.len() {
                 let matches =
                     Scanner::find_matching_beacons(&frontier, &unmapped_scanners[idx].beacons);
-                if let Some(center) = Scanner::identify_center(&matches) {
-                    let mut scanner = unmapped_scanners.swap_remove(idx);
-                    scanner.realign_to(&center);
-                    next_frontier.append(&mut scanner.beacons);
-                    scanners.push(center.center);
-                } else {
-                    idx += 1;
+                match Scanner::identify_center(&matches) {
+                    Some(center) => {
+                        let mut scanner = unmapped_scanners.swap_remove(idx);
+                        scanner.realign_to(&center);
+                        next_frontier.append(&mut scanner.beacons);
+                        scanners.push(center.center);
+                    }
+                    None => {
+                        idx += 1;
+                    }
                 }
             }
 
