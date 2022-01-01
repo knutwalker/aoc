@@ -2,3 +2,4 @@ target/
 *.code-workspace
 .cargoinstalled
 *_bench.md
+*_bench.jsonld

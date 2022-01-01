@@ -33,12 +33,17 @@ readme: README.md
 target/release/%: .cargoinstalled Cargo.toml Cargo.lock src/lib.rs $(shell find src/bin/$* -type f)
 > RUSTFLAGS="-C link-arg=-s -C opt-level=3 -C target-cpu=native --emit=asm" cargo build $(CARGOFLAGS) --bin $* --release
 
-%_bench.md: target/release/%
-> env AOC_NO_OUTPUT=1 hyperfine --export-markdown $@ --warmup 10 --runs 50 --parameter-scan day 1 25 --command-name 'day {day}' './$< {day}'
+%_bench.jsonld: target/release/%
+> env AOC_NO_OUTPUT=1 cargo bench --quiet --bin $* -- -Z unstable-options --format json > $@
+
+%_bench.md: %_bench.jsonld cargo_bench_filter.jq
+> jq -r -s -f cargo_bench_filter.jq $< > $@
+> markdown-table-formatter $@
+
+.PRECIOUS: target/release/% %_bench.jsonld
 
 README.md: README.tpl.md aoc2020_bench.md aoc2021_bench.md
 > m4 $< > $@
-> markdown-table-formatter $@
 
 .cargoinstalled:
 > @if ! command -v cargo 2> /dev/null
