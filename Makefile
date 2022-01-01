@@ -34,7 +34,7 @@ target/release/%: .cargoinstalled Cargo.toml Cargo.lock src/lib.rs $(shell find 
 > RUSTFLAGS="-C link-arg=-s -C opt-level=3 -C target-cpu=native --emit=asm" cargo build $(CARGOFLAGS) --bin $* --release
 
 %_bench.jsonld: target/release/%
-> env AOC_NO_OUTPUT=1 cargo bench --quiet --bin $* -- -Z unstable-options --format json > $@
+> cargo bench --quiet --bin $* -- -Z unstable-options --format json > $@
 
 %_bench.md: %_bench.jsonld cargo_bench_filter.jq
 > jq -r -s -f cargo_bench_filter.jq $< > $@

@@ -355,7 +355,6 @@ macro_rules! aoc_main {
         $(mod $md);+;
 
         fn main() {
-            let suppress_output = ::std::env::var_os("AOC_NO_OUTPUT").is_some();
             let mut total_time = ::std::time::Duration::ZERO;
             ::std::env::args()
                 .skip(1)
@@ -367,23 +366,19 @@ macro_rules! aoc_main {
                             let day_time = solution.parse_time + solution.part1_time + solution.part2_time;
                             total_time += day_time;
 
-                            if !suppress_output {
-                                println!("Day {:02}", day);
-                                println!("  - {}", $crate::ResultLine::note("Parsing", solution.parse_time));
-                                println!("  - {}", $crate::ResultLine::solution(1, solution.part1_time, solution.part1));
-                                println!("  - {}", $crate::ResultLine::solution(2, solution.part2_time, solution.part2));
-                                println!("  - {}", $crate::ResultLine::note("Total", day_time));
-                                println!();
-                            }
+                            println!("Day {:02}", day);
+                            println!("  - {}", $crate::ResultLine::note("Parsing", solution.parse_time));
+                            println!("  - {}", $crate::ResultLine::solution(1, solution.part1_time, solution.part1));
+                            println!("  - {}", $crate::ResultLine::solution(2, solution.part2_time, solution.part2));
+                            println!("  - {}", $crate::ResultLine::note("Total", day_time));
+                            println!();
                         }
                     ),+,
                     x => unimplemented!("Day {} is not yet implemented", x),
                 });
 
-                if !suppress_output {
-                    let total_time = ::humantime::format_duration(total_time);
-                    println!("Total time: {}", total_time);
-                }
+                let total_time = ::humantime::format_duration(total_time);
+                println!("Total time: {}", total_time);
         }
     };
 }
