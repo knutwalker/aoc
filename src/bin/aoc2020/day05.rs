@@ -4,7 +4,7 @@ register!(
     "input/day5.txt";
     (input: input!(Seat)) -> u16 {
         max_seat_id(input.iter());
-        find_seat(input);
+        find_seat(&input);
     }
 );
 
@@ -44,7 +44,8 @@ fn max_seat_id<'a>(input: impl Iterator<Item = &'a Seat>) -> u16 {
     **input.max().unwrap()
 }
 
-fn find_seat(mut seats: Vec<Seat>) -> u16 {
+fn find_seat(seats: &[Seat]) -> u16 {
+    let mut seats = seats.to_vec();
     seats.sort_unstable();
     let (first, rest) = seats.split_first().unwrap();
     rest.iter()
@@ -62,7 +63,8 @@ fn find_seat(mut seats: Vec<Seat>) -> u16 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aoc::SolutionExt;
+    use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test_parse_seat() {
@@ -77,5 +79,24 @@ mod tests {
         let (res1, res2) = Solver::run_on_input();
         assert_eq!(res1, 848);
         assert_eq!(res2, 682);
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| max_seat_id(input.iter()));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| find_seat(&input));
     }
 }

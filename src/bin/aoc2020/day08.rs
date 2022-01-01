@@ -5,7 +5,7 @@ register!(
     "input/day8.txt";
     (input: input!(parse Op)) -> i32 {
         run1(&input);
-        run2(input);
+        run2(&input);
     }
 );
 
@@ -28,7 +28,8 @@ fn run1(input: &[Op]) -> i32 {
     }
 }
 
-fn run2(mut input: Vec<Op>) -> i32 {
+fn run2(input: &[Op]) -> i32 {
+    let mut input = input.to_vec();
     for i in 0..input.len() {
         let op = input[i];
         match op {
@@ -78,7 +79,8 @@ pub enum Op {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aoc::SolutionExt;
+    use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test() {
@@ -105,5 +107,24 @@ mod tests {
     "
             )
         );
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run1(&input));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run2(&input));
     }
 }

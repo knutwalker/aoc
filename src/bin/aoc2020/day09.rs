@@ -49,6 +49,7 @@ fn run2(input: &[u64], needle: u64) -> u64 {
 mod tests {
     use super::*;
     use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test() {
@@ -88,5 +89,27 @@ mod tests {
     fn test_ex1() {
         assert_eq!(127, run1(&input(), 5));
         assert_eq!(62, run2(&input(), 127));
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run1(&input, 25));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| {
+            let part1 = run1(&input, 25);
+            run2(&input, part1)
+        });
     }
 }

@@ -8,7 +8,7 @@ register!(
     "input/day16.txt";
     (input: input!(chunk Input)) -> Output {
         run1(&input);
-        run2(input);
+        run2(&input);
     }
 );
 
@@ -84,20 +84,19 @@ fn run1(input: &[Vec<Input>]) -> Output {
         .sum()
 }
 
-fn run2(input: Vec<Vec<Input>>) -> Output {
-    let mut chunks = input.into_iter();
+fn run2(input: &[Vec<Input>]) -> Output {
+    let mut chunks = input.iter();
 
     let rules = chunks.next().unwrap();
     let rules = rules
-        .into_iter()
+        .iter()
         .map(|s| s.parse::<RuleAlternative>().unwrap())
         .map(Rule::from)
         .collect::<Vec<_>>();
 
     let my = chunks.next().unwrap();
     let my = my
-        .into_iter()
-        .nth(1)
+        .get(1)
         .unwrap()
         .split(',')
         .map(str::parse::<Output>)
@@ -106,7 +105,7 @@ fn run2(input: Vec<Vec<Input>>) -> Output {
 
     let others = chunks.next().unwrap();
     let others = others
-        .into_iter()
+        .iter()
         .skip(1)
         .filter_map(|t| {
             let nums = t
@@ -157,6 +156,7 @@ fn run2(input: Vec<Vec<Input>>) -> Output {
 mod tests {
     use super::*;
     use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test() {
@@ -192,7 +192,7 @@ mod tests {
     fn test_pt2() {
         assert_eq!(
             1,
-            run2(Solver::parse_input(
+            run2(&Solver::parse_input(
                 "
                 class: 0-1 or 4-19
                 row: 0-5 or 8-19
@@ -208,5 +208,24 @@ mod tests {
             ",
             ))
         );
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run1(&input));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run2(&input));
     }
 }

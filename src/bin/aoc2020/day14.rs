@@ -8,7 +8,7 @@ register!(
     "input/day14.txt";
     (input: input!(parse Input)) -> Output {
         run1(&input);
-        run2(input);
+        run2(&input);
     }
 );
 
@@ -58,9 +58,9 @@ struct State2 {
     keep_masks: Vec<u64>,
 }
 
-fn run2(input: Vec<Input>) -> Output {
+fn run2(input: &[Input]) -> Output {
     input
-        .into_iter()
+        .iter()
         .fold(State2::default(), |mut s, op| {
             match op {
                 Op::Mask(mask) => {
@@ -85,7 +85,7 @@ fn run2(input: Vec<Input>) -> Output {
                     let addr = addr | s.set_mask;
                     for &mask in &s.keep_masks {
                         let addr = addr & mask;
-                        s.memory.insert(addr, value);
+                        s.memory.insert(addr, *value);
                     }
                 }
             };
@@ -108,6 +108,7 @@ pub enum Op {
 mod tests {
     use super::*;
     use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test() {
@@ -135,6 +136,25 @@ mod tests {
             mask = 00000000000000000000000000000000X0XX
             mem[26] = 1
         ";
-        assert_eq!(208, run2(Solver::parse_input(input)));
+        assert_eq!(208, run2(&Solver::parse_input(input)));
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run1(&input));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run2(&input));
     }
 }

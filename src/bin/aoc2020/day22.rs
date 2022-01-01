@@ -217,7 +217,8 @@ impl ProcessInput for DeckInput {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aoc::SolutionExt;
+    use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test() {
@@ -282,5 +283,24 @@ mod tests {
         assert_eq!(1, deck.pop());
         assert_eq!(0, deck.len());
         assert!(deck.is_empty());
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run1(input.0.clone(), input.1.clone()));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run2(input.0.clone(), input.1.clone()));
     }
 }

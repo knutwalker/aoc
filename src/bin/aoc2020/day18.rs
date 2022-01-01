@@ -5,7 +5,7 @@ register!(
     "input/day18.txt";
     (input: input!(Input)) -> Output {
         run1(&input);
-        run2(input);
+        run2(&input);
     }
 );
 
@@ -13,8 +13,8 @@ fn run1(input: &[Input]) -> Output {
     input.iter().map(|l| eval1(l)).sum()
 }
 
-fn run2(input: Vec<Input>) -> Output {
-    input.into_iter().map(eval2).sum()
+fn run2(input: &[Input]) -> Output {
+    input.iter().map(|l| eval2(l)).sum()
 }
 
 fn eval1(line: &[u8]) -> Output {
@@ -40,7 +40,7 @@ fn eval1(line: &[u8]) -> Output {
     ev1(&mut line)
 }
 
-fn eval2(line: impl Into<Input>) -> Output {
+fn eval2(line: &[u8]) -> Output {
     fn ev2(ops: &mut impl Iterator<Item = u8>) -> Output {
         let mut sum = 0;
         let mut product = 1;
@@ -57,15 +57,15 @@ fn eval2(line: impl Into<Input>) -> Output {
         product * sum
     }
 
-    let line = line.into();
-    let mut line = line.into_iter();
+    let mut line = line.iter().copied();
     ev2(&mut line)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aoc::SolutionExt;
+    use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test() {
@@ -92,14 +92,33 @@ mod tests {
 
     #[test]
     fn test_eval2() {
-        assert_eq!(231, eval2("1 + 2 * 3 + 4 * 5 + 6"));
-        assert_eq!(51, eval2("1 + (2 * 3) + (4 * (5 + 6))"));
-        assert_eq!(46, eval2("2 * 3 + (4 * 5)"));
-        assert_eq!(1445, eval2("5 + (8 * 3 + 9 + 3 * 4 * 3)"));
-        assert_eq!(669_060, eval2("5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"));
+        assert_eq!(231, eval2(b"1 + 2 * 3 + 4 * 5 + 6"));
+        assert_eq!(51, eval2(b"1 + (2 * 3) + (4 * (5 + 6))"));
+        assert_eq!(46, eval2(b"2 * 3 + (4 * 5)"));
+        assert_eq!(1445, eval2(b"5 + (8 * 3 + 9 + 3 * 4 * 3)"));
+        assert_eq!(669_060, eval2(b"5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"));
         assert_eq!(
             23340,
-            eval2("((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2")
+            eval2(b"((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2")
         );
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run1(&input));
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| run2(&input));
     }
 }

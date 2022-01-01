@@ -11,7 +11,7 @@ register!(
     "input/day24.txt";
     (grid: input!(process Grids)) -> Output {
         grid.len();
-        flipped(grid).nth(100).unwrap();
+        flipped(&grid).nth(100).unwrap();
     }
 );
 
@@ -28,8 +28,8 @@ enum Dir {
     NE,
 }
 
-fn flipped(grid: Grid) -> impl Iterator<Item = Output> {
-    successors(Some(grid), |g| Some(cycle(g))).map(|g| g.len())
+fn flipped(grid: &Grid) -> impl Iterator<Item = Output> {
+    successors(Some(grid.clone()), |g| Some(cycle(g))).map(|g| g.len())
 }
 
 fn cycle(grid: &Grid) -> Grid {
@@ -134,7 +134,8 @@ impl ProcessInput for Grids {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aoc::SolutionExt;
+    use aoc::{Solution, SolutionExt};
+    use test::Bencher;
 
     #[test]
     fn test() {
@@ -172,5 +173,24 @@ mod tests {
         "
             )
         );
+    }
+
+    #[bench]
+    fn bench_parsing(b: &mut Bencher) {
+        let input = Solver::puzzle_input();
+        b.bytes = input.len() as u64;
+        b.iter(|| Solver::parse_input(input));
+    }
+
+    #[bench]
+    fn bench_pt1(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| input.len());
+    }
+
+    #[bench]
+    fn bench_pt2(b: &mut Bencher) {
+        let input = Solver::parse_input(Solver::puzzle_input());
+        b.iter(|| flipped(&input).nth(100).unwrap());
     }
 }
