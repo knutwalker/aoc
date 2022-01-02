@@ -1,4 +1,4 @@
-use aoc::ProcessInput;
+use aoc::{MinMax, ProcessInput};
 use fxhash::{FxBuildHasher, FxHashMap};
 use std::{array::TryFromSliceError, str::FromStr};
 use tap::Tap;
@@ -59,12 +59,10 @@ fn count(Input { template, pairs }: &Input, rounds: usize) -> Output {
         .fold(counts, |cs, ([b, _], count)| {
             cs.tap_mut(|c| *c.entry(b).or_default() += count)
         })
-        .into_iter()
-        .collect::<Vec<_>>()
-        .tap_mut(|v| v.sort_unstable_by_key(|c| c.1));
+        .into_values()
+        .collect::<MinMax<_>>();
 
-    let [(_, low), .., (_, high)] = &counts[..] else { unreachable!() };
-    high - low
+    counts.max - counts.min
 }
 
 #[derive(Clone, Debug)]

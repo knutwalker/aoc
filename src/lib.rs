@@ -18,6 +18,60 @@ macro_rules! poop {
     };
 }
 
+trait MinDefault {
+    fn min_default() -> Self;
+}
+
+trait MaxDefault {
+    fn max_default() -> Self;
+}
+
+macro_rules! def_impl {
+    ($($t:ty),+ $(,)?) => {
+        $(
+            impl MinDefault for $t {
+                fn min_default() -> Self {
+                    Self::MAX
+                }
+            }
+
+            impl MaxDefault for $t {
+                fn max_default() -> Self {
+                    Self::MIN
+                }
+            }
+
+        )+
+    };
+}
+
+def_impl!(u8, u16, u32, u64, usize, i8, i16, i32, i64, isize);
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct MinMax<T> {
+    pub min: T,
+    pub max: T,
+}
+
+impl<T: MinDefault + MaxDefault> Default for MinMax<T> {
+    fn default() -> Self {
+        Self {
+            min: MinDefault::min_default(),
+            max: MaxDefault::max_default(),
+        }
+    }
+}
+
+impl<A: Copy + Ord + MinDefault + MaxDefault> FromIterator<A> for MinMax<A> {
+    fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
+        iter.into_iter().fold(MinMax::default(), |mut mn, x| {
+            mn.max = mn.max.max(x);
+            mn.min = mn.min.min(x);
+            mn
+        })
+    }
+}
+
 pub trait MedianExt<T> {
     fn median(self) -> T;
 }
