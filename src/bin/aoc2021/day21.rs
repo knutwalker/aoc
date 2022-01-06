@@ -36,7 +36,6 @@ fn deterministic() -> impl Iterator<Item = u16> {
 fn play_normal(mut p1: (u16, u16), mut p2: (u16, u16), die: &mut impl Iterator<Item = u16>) -> u16 {
     while p1.1 < 1000 && p2.1 < 1000 {
         let roll = roll_die(die);
-        let (pos, score) = move_player(p1.0, p1.1, roll);
         p1 = move_player(p1.0, p1.1, roll);
         std::mem::swap(&mut p1, &mut p2);
     }

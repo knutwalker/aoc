@@ -201,7 +201,7 @@ mod tests {
         off x=9..11,y=9..11,z=9..11
         on x=10..10,y=10..10,z=10..10
         "#;
-        let (res1, res2) = Solver::run_on(input);
+        let (res1, _) = Solver::run_on(input);
         assert_eq!(res1, 39);
     }
 
@@ -231,7 +231,7 @@ mod tests {
         on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
         on x=967..23432,y=45373..81175,z=27513..53682
         "#;
-        let (res1, res2) = Solver::run_on(input);
+        let (res1, _) = Solver::run_on(input);
         assert_eq!(res1, 590_784);
     }
 

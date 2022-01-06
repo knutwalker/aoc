@@ -22,8 +22,7 @@
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
     clippy::missing_const_for_fn,
-    clippy::redundant_pub_crate,
-    unused_variables
+    clippy::redundant_pub_crate
 )]
 
 #[macro_use]

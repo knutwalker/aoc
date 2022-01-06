@@ -14,7 +14,7 @@ fn part1(octo: &mut Octo) -> usize {
 
 fn part2(octo: &mut Octo) -> usize {
     (101..usize::MAX)
-        .find(|round| octo.flash() == SIZE * SIZE)
+        .find(|_| octo.flash() == SIZE * SIZE)
         .unwrap()
 }
 
@@ -26,7 +26,7 @@ fn part1_standalone(mut octo: Octo) -> usize {
 #[cfg(test)]
 fn part2_standalone(mut octo: Octo) -> usize {
     (1..usize::MAX)
-        .find(|round| octo.flash() == SIZE * SIZE)
+        .find(|_| octo.flash() == SIZE * SIZE)
         .unwrap()
 }
 

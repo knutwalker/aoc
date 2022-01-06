@@ -374,7 +374,7 @@ trait Score: Sized + Clone {
 }
 
 impl Score for u32 {
-    fn win(board: Board) -> Self {
+    fn win(_board: Board) -> Self {
         0
     }
 
@@ -382,7 +382,7 @@ impl Score for u32 {
         Self::MAX
     }
 
-    fn try_finish(self, board: Board, cost: u32) -> Option<Self> {
+    fn try_finish(self, _board: Board, cost: u32) -> Option<Self> {
         let total = self.saturating_add(cost);
         (total < Self::MAX).then_some(total)
     }

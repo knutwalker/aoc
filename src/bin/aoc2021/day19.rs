@@ -127,7 +127,7 @@ impl Scanner {
         matches
             .combinations()
             .find_map(|[(c1_left, c1_right), (c2_left, c2_right)]| {
-                let left @ Coord([dx, dy, dz]) = *c2_left - *c1_left;
+                let Coord([dx, dy, dz]) = *c2_left - *c1_left;
 
                 (dx != dy && dx != dz).then(|| {
                     let Coord(right) = *c2_right - *c1_right;

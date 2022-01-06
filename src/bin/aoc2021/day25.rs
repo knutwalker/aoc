@@ -7,8 +7,8 @@ type Output = usize;
 register!(
     "input/day25.txt";
     (input: input!(parse Input)) -> Output {
-        part1(input.clone());
-        part2(&input);
+        part1(input);
+        part2();
     }
 );
 
@@ -17,13 +17,13 @@ fn part1(mut grid: Vec<Input>) -> Output {
     poop!("{}", Grid(&grid));
 
     (1..usize::MAX)
-        .find(|round| {
+        .find(|_round| {
             let result = !step1(&mut grid);
 
             poop!(
                 "After {} step{}:",
-                round,
-                if *round == 1 { "" } else { "s" }
+                _round,
+                if *_round == 1 { "" } else { "s" }
             );
             poop!("{}", Grid(&grid));
 
@@ -32,7 +32,7 @@ fn part1(mut grid: Vec<Input>) -> Output {
         .unwrap()
 }
 
-fn part2(items: &[Input]) -> Output {
+fn part2() -> Output {
     0
 }
 
@@ -189,7 +189,6 @@ mod tests {
 
     #[bench]
     fn bench_pt2(b: &mut Bencher) {
-        let input = Solver::parse_input(Solver::puzzle_input());
-        b.iter(|| part2(&input));
+        b.iter(part2);
     }
 }
