@@ -137,8 +137,12 @@ fn run2(input: &[Vec<Input>]) -> Output {
                 if let &[idx] = &candidates[..] {
                     rules_in_order[idx] = rule.take();
                     solved.insert(idx);
-                } else if candidates.is_empty() {
-                    panic!("rule not valid anywhere: {:#?}", rule)
+                } else {
+                    assert!(
+                        !candidates.is_empty(),
+                        "rule not valid anywhere: {:#?}",
+                        rule
+                    );
                 }
             }
         }
