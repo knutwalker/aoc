@@ -833,6 +833,78 @@ mod tests {
         assert_eq!(Room::from(a, a, a, a).free_slot(a), 16);
     }
 
+    #[test]
+    #[cfg(not(debug_assertions))] // release mode only, otherwise it will take too long
+    fn test_correctness() {
+        struct Case {
+            input: String,
+            top: String,
+            bottom: String,
+            p1: Output,
+            p2: Output,
+        }
+
+        let cases = (include_str!("d23-tests.txt"))
+            .lines()
+            .map(|l| {
+                let mut l = l.split_ascii_whitespace();
+                let top = l.next().unwrap();
+                let bottom = l.next().unwrap();
+                let input = format!(
+                    "#############\n#...........#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #########\n",
+                    char::from(top.as_bytes()[0]),
+                    char::from(top.as_bytes()[1]),
+                    char::from(top.as_bytes()[2]),
+                    char::from(top.as_bytes()[3]),
+                    char::from(bottom.as_bytes()[0]),
+                    char::from(bottom.as_bytes()[1]),
+                    char::from(bottom.as_bytes()[2]),
+                    char::from(bottom.as_bytes()[3]),
+                );
+                Case {
+                    input,
+                    top: top.to_string(),
+                    bottom: bottom.to_string(),
+                    p1: l.next().unwrap().parse().unwrap(),
+                    p2: l.next().unwrap().parse().unwrap(),
+                }
+            })
+            .collect::<Vec<_>>();
+
+        let t0 = std::time::Instant::now();
+        let mut n_fail = 0;
+        for Case {
+            input: s,
+            top,
+            bottom,
+            p1: expected1,
+            p2: expected2,
+        } in &cases
+        {
+            let (answer1, answer2) = Solver::run_on(s);
+            if answer1 != *expected1 || answer2 != *expected2 {
+                println!(
+                    "Test fail: {} {}: answer1={} answer2={} (expected1={} expected2={})",
+                    top, bottom, answer1, answer2, expected1, expected2
+                );
+                n_fail += 1;
+            }
+        }
+        let t1 = std::time::Instant::now();
+        let took = t1 - t0;
+        println!(
+            "Total time: {:?}. Per test: {:?}",
+            took,
+            took / cases.len().try_into().unwrap()
+        );
+        if n_fail == 0 {
+            println!("All {} tests have passed.", cases.len());
+        } else {
+            println!("{} failed out of {} tests.", n_fail, cases.len());
+        }
+        assert_eq!(n_fail, 0);
+    }
+
     #[bench]
     fn bench_parsing(b: &mut Bencher) {
         let input = Solver::puzzle_input();
