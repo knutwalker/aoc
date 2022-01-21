@@ -1,3 +1,4 @@
+#![feature(slice_take)]
 #![feature(test)]
 #![warn(
     clippy::all,

@@ -1,45 +1,46 @@
+type Input = u16;
+type Output = u64;
+
 register!(
     "input/day1.txt";
-    (input: input!(parse u64)) -> u64 {
+    (input: input!(parse Input)) -> Output {
         part1(&input);
         part2(&input);
     }
 );
 
-fn part1(input: &[u64]) -> u64 {
-    let mut input = input.to_vec();
-    input.sort_unstable();
-    find_pair_and_prod(2020, &input).expect("no solution")
-}
-
-fn part2(input: &[u64]) -> u64 {
-    let mut input = input.to_vec();
-    input.sort_unstable();
-    find_triple_and_prod(2020, &input)
-}
-
-fn find_triple_and_prod(target_sum: u64, mut items: &[u64]) -> u64 {
-    while let Some((&item, rest)) = items.split_first() {
-        if let Some(remainder) = target_sum.checked_sub(item) {
-            if let Some(prod) = find_pair_and_prod(remainder, rest) {
-                return prod * item;
-            }
-        };
-        items = rest;
+fn part1(input: &[Input]) -> Output {
+    let mut seen = [false; 2021];
+    for &item in input {
+        assert!(item < 2020);
+        let remainder = 2020 - item;
+        if seen[usize::from(remainder)] {
+            return Output::from(remainder) * Output::from(item);
+        }
+        seen[item as usize] = true;
     }
-    panic!("no solution")
+
+    unreachable!()
 }
 
-fn find_pair_and_prod(target_sum: u64, mut items: &[u64]) -> Option<u64> {
-    while let Some((&item, rest)) = items.split_first() {
-        if let Some(remainder) = target_sum.checked_sub(item) {
-            if let Ok(index) = rest.binary_search(&remainder) {
-                return Some(item * rest[index]);
+fn part2(mut input: &[Input]) -> Output {
+    let mut seen = [false; 2021];
+
+    while let Some(&first) = input.take_first() {
+        let target = 2020 - first;
+
+        for &second in input {
+            if second < target {
+                let third = target - second;
+                if seen[usize::from(third)] {
+                    return Output::from(third) * Output::from(second) * Output::from(first);
+                }
             }
-        };
-        items = rest;
+            seen[second as usize] = true;
+        }
     }
-    None
+
+    unreachable!()
 }
 
 #[cfg(test)]
