@@ -1,52 +1,56 @@
-use parse_display::FromStr;
-use std::ops::RangeInclusive;
+use aoc::{lines, PuzzleInput};
 
 register!(
     "input/day2.txt";
-    (input: input!(parse PasswordInput)) -> usize {
-        part1(&input);
-        part2(&input);
+    (input: input!(verbatim PasswordInput)) -> usize {
+        part1(input);
+        part2(input);
     }
 );
 
-fn part1(input: &[PasswordInput]) -> usize {
-    input.iter().filter(|l| is_valid_01(l)).count()
+fn part1((pt1, _): (usize, usize)) -> usize {
+    pt1
 }
 
-fn part2(input: &[PasswordInput]) -> usize {
-    input.iter().filter(|l| is_valid_02(l)).count()
+fn part2((_, pt2): (usize, usize)) -> usize {
+    pt2
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, FromStr)]
-#[display("{min}-{max} {letter}: {pass}")]
-pub(super) struct PasswordInput {
-    min: usize,
-    max: usize,
-    letter: char,
-    pass: String,
+#[derive(Copy, Clone, Debug)]
+pub struct PasswordInput {
+    pt1: bool,
+    pt2: bool,
 }
 
-impl PasswordInput {
-    fn range(&self) -> RangeInclusive<usize> {
-        self.min..=self.max
+impl PuzzleInput for PasswordInput {
+    type Out = (usize, usize);
+
+    fn from_input(input: &str) -> Self::Out {
+        lines(input)
+            .map(Self::parse)
+            .map(|p| (usize::from(p.pt1), usize::from(p.pt2)))
+            .reduce(|(la, lb), (ra, rb)| (la + ra, lb + rb))
+            .unwrap()
     }
 }
 
-fn is_valid_01(input: &PasswordInput) -> bool {
-    let occurrences = input.pass.chars().filter(|c| *c == input.letter).count();
-    input.range().contains(&occurrences)
-}
+impl PasswordInput {
+    fn parse(input: &str) -> Self {
+        let (min, input) = input.split_once('-').unwrap();
+        let min = min.parse::<usize>().unwrap();
+        let (max, input) = input.split_once(' ').unwrap();
+        let max = max.parse::<usize>().unwrap();
+        let (letter, input) = input.split_once(':').unwrap();
+        let letter = letter.as_bytes()[0];
+        let pass = input[1..].as_bytes();
 
-fn is_valid_02(input: &PasswordInput) -> bool {
-    let pos1 = input.min - 1;
-    let pos2 = input.max - 1;
-    let matches = input
-        .pass
-        .char_indices()
-        .filter(|(idx, _)| *idx == pos1 || *idx == pos2)
-        .filter(|(_, ch)| *ch == input.letter)
-        .count();
-    matches == 1
+        #[allow(clippy::naive_bytecount)]
+        let pt1 = pass.iter().filter(|b| **b == letter).count();
+        let pt1 = pt1 >= min && pt1 <= max;
+        let pt2 = (pass[min - 1] == letter) ^ (pass[max - 1] == letter);
+
+        Self { pt1, pt2 }
+    }
 }
 
 #[cfg(test)]
@@ -54,29 +58,6 @@ mod tests {
     use super::*;
     use aoc::{Solution, SolutionExt};
     use test::Bencher;
-
-    #[test]
-    fn parse() {
-        test_parse("1-3 a: bbb", 1, 3, 'a', "bbb");
-        test_parse("42-42 a: bbb", 42, 42, 'a', "bbb");
-        test_parse("42-1337 a: bbb", 42, 1337, 'a', "bbb");
-        test_parse("1337-42 a: bbb", 1337, 42, 'a', "bbb");
-        test_parse("1-2 x: x", 1, 2, 'x', "x");
-        test_parse("1-2 x: xxxxxxxxxxx", 1, 2, 'x', "xxxxxxxxxxx");
-    }
-
-    fn test_parse(input: &str, min: usize, max: usize, letter: char, pass: &str) {
-        let input = input.parse::<PasswordInput>().unwrap();
-        assert_eq!(
-            input,
-            PasswordInput {
-                min,
-                max,
-                letter,
-                pass: String::from(pass)
-            }
-        );
-    }
 
     #[test]
     fn test() {
@@ -95,12 +76,12 @@ mod tests {
     #[bench]
     fn bench_pt1(b: &mut Bencher) {
         let input = Solver::parse_input(Solver::puzzle_input());
-        b.iter(|| part1(&input));
+        b.iter(|| part1(input));
     }
 
     #[bench]
     fn bench_pt2(b: &mut Bencher) {
         let input = Solver::parse_input(Solver::puzzle_input());
-        b.iter(|| part2(&input));
+        b.iter(|| part2(input));
     }
 }
