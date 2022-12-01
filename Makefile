@@ -11,7 +11,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-APP := aoc2021
+APP := aoc2022
 
 CARGOFLAGS ?=
 
@@ -30,7 +30,7 @@ readme: README.md
 
 ### build targets
 
-target/release/%: .cargoinstalled Cargo.toml Cargo.lock src/lib.rs $(shell find src/bin/$* -type f)
+target/release/%: .cargoinstalled Cargo.toml Cargo.lock src/lib.rs $(shell find src/bin/ -type f)
 > RUSTFLAGS="-C link-arg=-s -C opt-level=3 -C target-cpu=native --emit=asm" cargo build $(CARGOFLAGS) --bin $* --release
 
 %_bench.jsonld: target/release/%
@@ -42,7 +42,7 @@ target/release/%: .cargoinstalled Cargo.toml Cargo.lock src/lib.rs $(shell find 
 
 .PRECIOUS: target/release/% %_bench.jsonld
 
-README.md: README.tpl.md aoc2020_bench.md aoc2021_bench.md
+README.md: README.tpl.md aoc2020_bench.md aoc2021_bench.md aoc2022_bench.md
 > m4 $< > $@
 
 .cargoinstalled:
@@ -56,7 +56,7 @@ README.md: README.tpl.md aoc2020_bench.md aoc2021_bench.md
 # Download inputs
 
 i%:
-> curl --cookie "session=$$(cat .sessioncookie)" "https://adventofcode.com/2021/day/$*/input" > src/bin/$(APP)/input/day$*.txt
+> curl --cookie "session=$$(cat .sessioncookie)" "https://adventofcode.com/2022/day/$*/input" > src/bin/$(APP)/input/day$*.txt
 > bat src/bin/$(APP)/input/day$*.txt
 
 # Generate source file

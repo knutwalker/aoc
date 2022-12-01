@@ -10,3 +10,7 @@ sinclude({{aoc2020_bench.md}})
 ## 2021
 
 sinclude({{aoc2021_bench.md}})
+
+## 2022
+
+sinclude({{aoc2022_bench.md}})
