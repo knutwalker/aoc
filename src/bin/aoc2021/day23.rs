@@ -432,8 +432,8 @@ impl Score for Scores {
                 let mut total = 0;
                 for (board, score) in board.into_iter().rev() {
                     total += score;
-                    println!("Score: {} == Total: {}", score, total);
-                    println!("{}", board);
+                    println!("Score: {score} == Total: {total}");
+                    println!("{board}");
                 }
                 println!(" -- =================== -- ");
                 score
@@ -739,8 +739,8 @@ mod tests {
         for m in [16, 2, 2, 2, 0, 0] {
             let (next, score) = board.valid_moves().nth(m).unwrap();
             total += score;
-            println!("score: {:>8}, total: {:>8}", score, total);
-            println!("{}", next);
+            println!("score: {score:>8}, total: {total:>8}");
+            println!("{next}");
 
             board = next;
             while let Some((next, score)) = board.try_move_from_hallway() {
@@ -749,7 +749,7 @@ mod tests {
                     "score: {:>8}, total: {:>8}  move from hallway",
                     score, total
                 );
-                println!("{}", next);
+                println!("{next}");
                 board = next;
             }
         }

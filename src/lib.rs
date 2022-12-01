@@ -11,6 +11,7 @@ macro_rules! poop {
     ($($arg:tt)*) => {
         {
             #[cfg(debug_assertions)]
+            #[allow(clippy::used_underscore_binding)]
             {
                 println!($($arg)*);
             }
@@ -367,6 +368,7 @@ macro_rules! input {
 #[macro_export]
 macro_rules! register {
     ($file:literal; ($input:ident: $input_ty:ty) -> $output_ty:ty { $part1:expr; $part2:expr $(;)? }) => {
+        #[allow(clippy::redundant_pub_crate)]
         pub(crate) struct Solver;
 
         impl $crate::Solution for Solver {

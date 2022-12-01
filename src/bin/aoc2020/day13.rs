@@ -21,10 +21,7 @@ fn run1(input: &[Input]) -> i64 {
 
 fn run2(input: &[Input]) -> i64 {
     fn gcd(m: usize, n: usize) -> usize {
-        match n.checked_rem(m) {
-            None => n,
-            Some(n) => gcd(n, m),
-        }
+        n.checked_rem(m).map_or(n, |n| gcd(n, m))
     }
 
     fn lcm(a: usize, b: usize) -> usize {

@@ -42,27 +42,24 @@ fn boot(items: &[Input], limit: Option<i32>) -> Output {
         cube.borrow().volume() - volume_of_intersecting
     }
 
-    let cubes;
-    let input = match limit {
-        None => items,
-        Some(limit) => {
-            let limit = Cube {
-                from: Coord([-limit, -limit, -limit]),
-                to: Coord([limit, limit, limit]),
-            };
+    let mut cubes = Vec::new();
+    let input = limit.map_or(items, |limit| {
+        let limit = Cube {
+            from: Coord([-limit, -limit, -limit]),
+            to: Coord([limit, limit, limit]),
+        };
 
-            cubes = items
-                .iter()
-                .filter_map(|i| {
-                    i.cube.try_intersect(&limit).map(|c| Input {
-                        toggle: i.toggle,
-                        cube: c,
-                    })
+        cubes = items
+            .iter()
+            .filter_map(|i| {
+                i.cube.try_intersect(&limit).map(|c| Input {
+                    toggle: i.toggle,
+                    cube: c,
                 })
-                .collect::<Vec<_>>();
-            &cubes[..]
-        }
-    };
+            })
+            .collect::<Vec<_>>();
+        &cubes[..]
+    });
 
     heads_and_tails(input)
         .filter(|(i, _)| i.toggle)
@@ -117,8 +114,8 @@ impl Cube {
                 return None;
             }
             Some((
-                from_left.max(from_right).min(to_right),
-                to_left.max(from_right).min(to_right),
+                from_left.clamp(from_right, to_right),
+                to_left.clamp(from_right, to_right),
             ))
         }
 

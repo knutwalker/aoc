@@ -25,7 +25,7 @@ trait Ship: Default + Into<Pos> {
 
     fn dist(self) -> usize {
         let (x, y) = self.into();
-        x.abs() as usize + y.abs() as usize
+        x.unsigned_abs() + y.unsigned_abs()
     }
 }
 
@@ -113,10 +113,10 @@ enum Heading {
 impl Heading {
     fn apply(self, dist: isize, (x, y): &mut Pos) {
         match self {
-            Heading::North => *y -= dist,
-            Heading::East => *x += dist,
-            Heading::South => *y += dist,
-            Heading::West => *x -= dist,
+            Self::North => *y -= dist,
+            Self::East => *x += dist,
+            Self::South => *y += dist,
+            Self::West => *x -= dist,
         }
     }
 

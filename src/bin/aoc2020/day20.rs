@@ -159,13 +159,13 @@ where
     rotated
 }
 
-fn flip_h(block: &mut Vec<Vec<u8>>) {
+fn flip_h(block: &mut [Vec<u8>]) {
     for i in 0..5 {
         block.swap(i, 9 - i);
     }
 }
 
-fn flip_v(block: &mut Vec<Vec<u8>>) {
+fn flip_v(block: &mut [Vec<u8>]) {
     for line in block.iter_mut() {
         line.reverse();
     }
@@ -398,17 +398,17 @@ impl TileEdges {
     }
 
     fn rotated(self) -> Self {
-        let TileEdges(top, right, bottom, left) = self;
+        let Self(top, right, bottom, left) = self;
         Self(Self::swap(left), top, Self::swap(right), bottom)
     }
 
     fn h_flipped(self) -> Self {
-        let TileEdges(top, right, bottom, left) = self;
+        let Self(top, right, bottom, left) = self;
         Self(bottom, Self::swap(right), top, Self::swap(left))
     }
 
     fn v_flipped(self) -> Self {
-        let TileEdges(top, right, bottom, left) = self;
+        let Self(top, right, bottom, left) = self;
         Self(Self::swap(top), left, Self::swap(bottom), right)
     }
 

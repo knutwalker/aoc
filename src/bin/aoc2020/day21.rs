@@ -24,7 +24,7 @@ fn part1(input: &AllergenList) -> Output {
         .filter(|x| !allergenic_ingredients.contains(x.as_str()))
         .count();
 
-    format!("{}", pt1)
+    format!("{pt1}")
 }
 
 fn part2(input: &AllergenList) -> Output {

@@ -12,10 +12,9 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
+    clippy::iter_with_drain,
     clippy::missing_const_for_fn,
-    clippy::redundant_pub_crate,
-    clippy::similar_names,
-    unused_variables
+    clippy::similar_names
 )]
 
 #[macro_use]

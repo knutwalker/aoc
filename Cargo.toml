@@ -9,17 +9,17 @@ publish = false
 default-run = "aoc2021"
 
 [dependencies]
-bitvec = "0.22.3"
+bitvec = "1.0.1"
 const-combinations = "2.0.3"
 derive_more = { version = "0.99.17", features = ["add", "add_assign", "deref", "deref_mut", "index", "index_mut"], default-features = false }
 disjoint-sets = "0.4.2"
 fxhash = "0.2.1"
 humantime = "2.1.0"
-indexmap = "1.7.0"
-num_enum = "0.5.4"
-owo-colors = { version = "3.1.1", features = ["supports-colors"] }
-parse-display = "0.5.3"
-priority-queue = "1.2.1"
+indexmap = "1.9.2"
+num_enum = "0.5.7"
+owo-colors = { version = "3.5.0", features = ["supports-colors"] }
+parse-display = "0.6.0"
+priority-queue = "1.3.0"
 tap = "1.0.1"
 
 # bit-set = "0.5.2"

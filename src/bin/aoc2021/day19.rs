@@ -117,7 +117,7 @@ impl Scanner {
         lhs.iter()
             .flat_map(|(b1, diff1)| {
                 other.iter().filter_map(|(b2, diff2)| {
-                    (diff1.intersection(diff2).count() >= 11).then(|| (*b1, *b2))
+                    (diff1.intersection(diff2).count() >= 11).then_some((*b1, *b2))
                 })
             })
             .collect()

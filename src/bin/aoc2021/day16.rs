@@ -1,4 +1,6 @@
-use bitvec::{field::BitField, mem::BitMemory, order::Msb0, slice::BitSlice, vec::BitVec};
+use bitvec::{
+    field::BitField, macros::internal::funty::Integral, order::Msb0, slice::BitSlice, vec::BitVec,
+};
 use std::{
     cmp::Ordering,
     convert::Infallible,
@@ -34,7 +36,7 @@ pub struct Packet {
 struct Input<'a>(&'a Bits);
 
 impl<'a> Input<'a> {
-    fn load<V: BitMemory>(&mut self, num_bits: usize) -> V {
+    fn load<V: Integral>(&mut self, num_bits: usize) -> V {
         let (val, input) = self.0.split_at(num_bits);
         self.0 = input;
         val.load_be()
@@ -102,7 +104,7 @@ impl<'a> Input<'a> {
     }
 
     fn decode_literal(&mut self, version: Output) -> Packet {
-        let mut val = BitVec::<Msb0, Output>::new();
+        let mut val = BitVec::<Output, Msb0>::new();
 
         for (idx, chunk) in self.0.chunks(5).enumerate() {
             val.extend(&chunk[1..]);
@@ -130,12 +132,12 @@ impl FromStr for Packet {
                 let c2 = char::from(*c2).to_digit(16)? as u8;
                 Some(c1 << 4 | c2)
             })
-            .collect::<BitVec<Msb0, _>>();
+            .collect::<BitVec<_, Msb0>>();
         Ok(Input(&bits).decode())
     }
 }
 
-type Bits = BitSlice<Msb0, u8>;
+type Bits = BitSlice<u8, Msb0>;
 
 #[cfg(test)]
 mod tests {

@@ -1,5 +1,5 @@
 use aoc::{lines, PuzzleInput};
-use bitvec::prelude::{bitarr, BitArray, BitSlice, BitStore, Msb0};
+use bitvec::prelude::{bitarr, BitArray, BitSlice, Msb0};
 use std::fmt::{Display, Write};
 
 type Output = usize;
@@ -36,7 +36,7 @@ fn part2_standalone(mut input: Input) -> Output {
 
 #[derive(Debug, Clone)]
 pub struct Input {
-    algorithm: BitArray<Msb0, [u64; 8]>,
+    algorithm: BitArray<[u64; 8], Msb0>,
     size: usize,
     image: Image,
 }
@@ -57,7 +57,7 @@ const MAX_LEN: usize = N + PADDING;
 const IMG_SIZE: usize = MAX_LEN * MAX_LEN;
 
 /// image representation as bit vector on stack
-type Bits = BitArray<Msb0, [u64; (IMG_SIZE + 63) / 64]>;
+type Bits = BitArray<[u64; (IMG_SIZE + 63) / 64], Msb0>;
 
 #[derive(Debug, Clone)]
 struct Image {
@@ -77,7 +77,7 @@ impl Input {
 }
 
 impl Image {
-    fn iterate(&mut self, algorithm: &BitSlice<Msb0, u64>, sz: usize) {
+    fn iterate(&mut self, algorithm: &BitSlice<u64, Msb0>, sz: usize) {
         let size = self.size + 2;
 
         let next_start = self.start - sz - 1;
@@ -131,7 +131,7 @@ impl PuzzleInput for Input {
         let mut input = lines(input);
         let algorithm_input = input.next().expect("algorithm");
 
-        let mut algorithm = bitarr![Msb0, u64; 0; 512];
+        let mut algorithm = bitarr![u64, Msb0; 0; 512];
         for (a, mut b) in algorithm_input.bytes().zip(algorithm.iter_mut()) {
             *b = matches!(a, b'#');
         }
@@ -144,11 +144,11 @@ impl PuzzleInput for Input {
             );
         }
 
-        let mut image = bitarr![Msb0, u64; 0; IMG_SIZE];
+        let mut image = bitarr![u64, Msb0; 0; IMG_SIZE];
         let next = if infinity {
-            bitarr![Msb0, u64; 1; IMG_SIZE]
+            bitarr![u64, Msb0; 1; IMG_SIZE]
         } else {
-            bitarr![Msb0, u64; 0; IMG_SIZE]
+            bitarr![u64, Msb0; 0; IMG_SIZE]
         };
 
         let first_line = input.next().unwrap();

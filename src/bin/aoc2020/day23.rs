@@ -54,7 +54,7 @@ fn run_any(input: &[u8], cards: u32, games: u32) -> Vec<u32> {
     #[cfg(debug_assertions)]
     {
         for (i, &cup) in cups.iter().enumerate().skip(1) {
-            debug_assert!(cup != 0, "Cup {} is not linked", i);
+            debug_assert!(cup != 0, "Cup {i} is not linked");
         }
     }
 

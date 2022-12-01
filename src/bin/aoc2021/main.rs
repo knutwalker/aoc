@@ -1,12 +1,9 @@
 #![feature(
     array_chunks,
     array_windows,
-    bool_to_option,
     control_flow_enum,
     drain_filter,
     iter_partition_in_place,
-    let_else,
-    mixed_integer_ops,
     test
 )]
 #![warn(
@@ -21,6 +18,7 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
+    clippy::iter_with_drain,
     clippy::missing_const_for_fn,
     clippy::redundant_pub_crate
 )]

@@ -51,7 +51,7 @@ impl Num {
                 fn add(num: &mut Num, idx: usize, val: u8) {
                     match num {
                         Num::Reg(v) => *v += val,
-                        Num::Pair(pair) => add(&mut *pair[idx], idx, val),
+                        Num::Pair(pair) => add(&mut pair[idx], idx, val),
                     }
                 }
 
@@ -67,7 +67,7 @@ impl Num {
 
                     match (*left, *right) {
                         (Num::Reg(left), Num::Reg(right)) => (Some(left), Some(right)),
-                        (l, r) => panic!("Nested pair is nested: {:?}, {:?}", l, r),
+                        (l, r) => panic!("Nested pair is nested: {l:?}, {r:?}"),
                     }
                 })
             } else {
@@ -186,8 +186,8 @@ impl FromStr for Num {
 impl Display for Num {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Reg(v) => write!(f, "{}", v),
-            Self::Pair([lhs, rhs]) => write!(f, "[{},{}]", lhs, rhs),
+            Self::Reg(v) => write!(f, "{v}"),
+            Self::Pair([lhs, rhs]) => write!(f, "[{lhs},{rhs}]"),
         }
     }
 }
