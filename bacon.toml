@@ -1,7 +1,7 @@
 # This is a configuration file for the bacon tool
 # More info at https://github.com/Canop/bacon
 
-default_job = "check"
+default_job = "test2022"
 
 [jobs]
 
@@ -52,6 +52,21 @@ command = [
 need_stdout = true
 watch = ["src/bin/aoc2022"]
 
+[jobs.bench2020]
+command = ["cargo", "bench", "--color", "always", "--bin", "aoc2020"]
+need_stdout = true
+watch = ["src/bin/aoc2020"]
+
+[jobs.bench2021]
+command = ["cargo", "bench", "--color", "always", "--bin", "aoc2021"]
+need_stdout = true
+watch = ["src/bin/aoc2021"]
+
+[jobs.bench2022]
+command = ["cargo", "bench", "--color", "always", "--bin", "aoc2022"]
+need_stdout = true
+watch = ["src/bin/aoc2022"]
+
 # if the doc compiles, then it opens in your browser and bacon switches
 # to the previous job
 [jobs.doc]
@@ -67,3 +82,6 @@ on_success = "back"                                                    # so that
 0 = "job:test2020"
 1 = "job:test2021"
 2 = "job:test2022"
+z = "job:bench2020"
+x = "job:bench2021"
+c = "job:bench2022"
