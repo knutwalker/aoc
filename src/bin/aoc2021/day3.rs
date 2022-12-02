@@ -36,8 +36,8 @@ impl FromIterator<Bit> for Bits {
     }
 }
 
-impl From<String> for Bits {
-    fn from(s: String) -> Self {
+impl From<&str> for Bits {
+    fn from(s: &str) -> Self {
         s.bytes().map(|b| Bit::try_from(b).unwrap()).collect()
     }
 }

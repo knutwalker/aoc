@@ -11,8 +11,8 @@ register!(
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Answers(u32, bool);
 
-impl From<String> for Answers {
-    fn from(input: String) -> Self {
+impl From<&str> for Answers {
+    fn from(input: &str) -> Self {
         Self(
             input
                 .bytes()
