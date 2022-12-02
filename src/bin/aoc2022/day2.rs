@@ -55,14 +55,16 @@ pub struct Input([char; 2]);
 
 impl From<&str> for Input {
     fn from(value: &str) -> Self {
-        Self(
-            value
-                .chars()
-                .filter(|c| !c.is_whitespace())
-                .collect::<Vec<_>>()
-                .try_into()
-                .unwrap(),
-        )
+        let mut chars = value.chars();
+        let (Some(fst), Some(' '), Some(snd), None) = (
+            chars.next(),
+            chars.next(),
+            chars.next(),
+            chars.next(),
+        ) else {
+            unreachable!("invalid input: {value}");
+        };
+        Self([fst, snd])
     }
 }
 
