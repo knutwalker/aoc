@@ -6,12 +6,19 @@ description = "Advent of Code solutions for @knutwalker"
 edition = "2021"
 license = "MIT"
 publish = false
-default-run = "aoc2021"
+default-run = "aoc2022"
 
 [dependencies]
 bitvec = "1.0.1"
 const-combinations = "2.0.3"
-derive_more = { version = "0.99.17", features = ["add", "add_assign", "deref", "deref_mut", "index", "index_mut"], default-features = false }
+derive_more = { version = "0.99.17", features = [
+    "add",
+    "add_assign",
+    "deref",
+    "deref_mut",
+    "index",
+    "index_mut",
+], default-features = false }
 disjoint-sets = "0.4.2"
 fxhash = "0.2.1"
 humantime = "2.1.0"
@@ -41,3 +48,6 @@ name = "aoc2020"
 
 [[bin]]
 name = "aoc2021"
+
+[[bin]]
+name = "aoc2022"
