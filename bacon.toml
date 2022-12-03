@@ -24,6 +24,7 @@ command = [
     "aoc2020",
 ]
 need_stdout = true
+allow_warnings = true
 watch = ["src/bin/aoc2020"]
 
 [jobs.test2021]
@@ -37,6 +38,7 @@ command = [
     "aoc2021",
 ]
 need_stdout = true
+allow_warnings = true
 watch = ["src/bin/aoc2021"]
 
 [jobs.test2022]
@@ -50,21 +52,25 @@ command = [
     "aoc2022",
 ]
 need_stdout = true
+allow_warnings = true
 watch = ["src/bin/aoc2022"]
 
 [jobs.bench2020]
 command = ["cargo", "bench", "--color", "always", "--bin", "aoc2020"]
 need_stdout = true
+allow_warnings = true
 watch = ["src/bin/aoc2020"]
 
 [jobs.bench2021]
 command = ["cargo", "bench", "--color", "always", "--bin", "aoc2021"]
 need_stdout = true
+allow_warnings = true
 watch = ["src/bin/aoc2021"]
 
 [jobs.bench2022]
 command = ["cargo", "bench", "--color", "always", "--bin", "aoc2022"]
 need_stdout = true
+allow_warnings = true
 watch = ["src/bin/aoc2022"]
 
 # if the doc compiles, then it opens in your browser and bacon switches
