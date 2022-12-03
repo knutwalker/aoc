@@ -21,7 +21,8 @@
     clippy::fallible_impl_from,
     clippy::iter_with_drain,
     clippy::missing_const_for_fn,
-    clippy::redundant_pub_crate
+    clippy::redundant_pub_crate,
+    unused
 )]
 
 #[macro_use]
