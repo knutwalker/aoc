@@ -1,5 +1,3 @@
-use derive_more::Deref;
-
 type Input = Rucksack;
 type Output = u32;
 
@@ -14,32 +12,34 @@ register!(
 fn part1(items: &[Input]) -> Output {
     items
         .iter()
-        .map(|rucksack| rucksack.split_at(rucksack.len() / 2))
-        .map(|(fst, snd)| (to_set(fst) & to_set(snd)).trailing_zeros())
+        .map(|Rucksack(fst, snd)| *fst & *snd)
+        .map(u64::trailing_zeros)
         .sum()
 }
 
 fn part2(items: &[Input]) -> Output {
     items
+        .iter()
+        .map(|Rucksack(fst, snd)| *fst | *snd)
         .array_chunks()
-        .map(|[a, b, c]| (to_set(a) & to_set(b) & to_set(c)).trailing_zeros())
+        .map(|[a, b, c]| (a & b & c))
+        .map(u64::trailing_zeros)
         .sum()
 }
 
-fn to_set(items: &[u8]) -> u64 {
-    items.iter().fold(0, |acc, item| acc | 1 << *item)
-}
-
-fn to_prio(item: u8) -> u8 {
-    (item & 0x1F) + 26 * (1 - u8::from(item & 0x20 == 0x20))
-}
-
-#[derive(Clone, Debug, Deref)]
-pub struct Rucksack(Vec<u8>);
+pub struct Rucksack(u64, u64);
 
 impl From<&str> for Rucksack {
     fn from(s: &str) -> Self {
-        Self(s.bytes().map(to_prio).collect())
+        fn to_prio(item: u8) -> u64 {
+            1 << ((item & 0x1F) + 26 * (1 - u8::from(item & 0x20 == 0x20)))
+        }
+
+        let mid = s.len() / 2;
+        let mut items = s.bytes().map(to_prio);
+        let mut fst = items.by_ref().take(mid).fold(0, |acc, item| acc | item);
+        let mut snd = items.fold(0, |acc, item| acc | item);
+        Self(fst, snd)
     }
 }
 
