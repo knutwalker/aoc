@@ -1,12 +1,12 @@
 register!(
     "input/day3.txt";
-    (input: input!(Vec<u8>)) -> usize {
+    (input: input!([u8])) -> usize {
         count_trees((3, 1), &input);
         part2(&input);
     }
 );
 
-fn count_trees((slope_right, slope_down): (usize, usize), lines: &[Vec<u8>]) -> usize {
+fn count_trees((slope_right, slope_down): (usize, usize), lines: &[&[u8]]) -> usize {
     lines
         .iter()
         .step_by(slope_down)
@@ -21,7 +21,7 @@ fn is_tree((line, index): (impl AsRef<[u8]>, usize)) -> bool {
     line[index % line.len()] == b'#'
 }
 
-fn part2(lines: &[Vec<u8>]) -> usize {
+fn part2(lines: &[&[u8]]) -> usize {
     count_trees((1, 1), lines)
         * count_trees((3, 1), lines)
         * count_trees((5, 1), lines)

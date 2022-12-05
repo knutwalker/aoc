@@ -92,26 +92,47 @@ impl<T: Ord + Copy> MedianExt<T> for Vec<T> {
     }
 }
 
+pub trait Parse {
+    type Out<'a>;
+    fn parse_from(s: &str) -> Self::Out<'_>;
+}
+
+impl Parse for [u8] {
+    type Out<'a> = &'a [u8];
+
+    fn parse_from(s: &str) -> Self::Out<'_> {
+        s.as_bytes()
+    }
+}
+
+impl Parse for str {
+    type Out<'a> = &'a str;
+
+    fn parse_from(s: &str) -> Self::Out<'_> {
+        s
+    }
+}
+
 pub trait PuzzleInput
 where
     Self: Sized,
 {
-    type Out;
+    type Out<'a>;
 
-    fn from_input(input: &str) -> Self::Out;
+    fn from_input(input: &str) -> Self::Out<'_>;
 }
 
 pub trait ProcessInput {
     type In: PuzzleInput;
-    type Out;
+    type Out<'a>;
 
-    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out;
+    fn process(input: <Self::In as PuzzleInput>::Out<'_>) -> Self::Out<'_>;
 }
 
 impl PuzzleInput for () {
-    type Out = Self;
+    type Out<'a> = Self;
 
-    fn from_input(_input: &str) -> Self::Out {}
+    fn from_input(_input: &str) -> Self::Out<'_> {}
 }
 
 pub struct Blocks<T>(PhantomData<T>);
@@ -120,37 +141,37 @@ impl<T> PuzzleInput for Blocks<T>
 where
     T: PuzzleInput,
 {
-    type Out = Vec<T::Out>;
+    type Out<'a> = Vec<T::Out<'a>>;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         input.split("\n\n").map(|l| T::from_input(l)).collect()
     }
 }
 
-pub struct Parsing<T>(PhantomData<T>);
+pub struct StdFromStrParsing<T>(PhantomData<T>);
 
-impl<T> PuzzleInput for Parsing<T>
+impl<T> PuzzleInput for StdFromStrParsing<T>
 where
     T: FromStr,
     <T as FromStr>::Err: Debug,
 {
-    type Out = Vec<T>;
+    type Out<'a> = Vec<T>;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         lines(input).map(|l| T::from_str(l).unwrap()).collect()
     }
 }
 
-pub struct As<T>(PhantomData<T>);
+pub struct Parsing<T: ?Sized>(PhantomData<T>);
 
-impl<T> PuzzleInput for As<T>
+impl<T: ?Sized> PuzzleInput for Parsing<T>
 where
-    T: for<'x> From<&'x str>,
+    T: Parse,
 {
-    type Out = Vec<T>;
+    type Out<'a> = Vec<T::Out<'a>>;
 
-    fn from_input(input: &str) -> Self::Out {
-        lines(input).map(|l| T::from(l)).collect()
+    fn from_input(input: &str) -> Self::Out<'_> {
+        lines(input).map(|l| T::parse_from(l)).collect()
     }
 }
 
@@ -160,9 +181,9 @@ impl<T> PuzzleInput for Post<T>
 where
     T: ProcessInput,
 {
-    type Out = T::Out;
+    type Out<'a> = T::Out<'a>;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let input = T::In::from_input(input);
         T::process(input)
     }
@@ -173,14 +194,14 @@ pub struct First<T>(PhantomData<T>);
 impl<T> ProcessInput for First<T>
 where
     T: PuzzleInput,
-    T::Out: PopFirst,
+    for<'x> T::Out<'x>: PopFirst,
 {
     type In = T;
 
-    type Out = <T::Out as PopFirst>::Out;
+    type Out<'a> = <T::Out<'a> as PopFirst>::Out;
 
-    fn process(input: <T as PuzzleInput>::Out) -> Self::Out {
-        <T::Out as PopFirst>::pop_first(input)
+    fn process(input: <T as PuzzleInput>::Out<'_>) -> Self::Out<'_> {
+        <T::Out<'_> as PopFirst>::pop_first(input)
     }
 }
 
@@ -217,12 +238,12 @@ pub trait Solution {
     fn puzzle_input() -> &'static str;
 
     #[inline]
-    fn parse_input(input: &str) -> <Self::Input as PuzzleInput>::Out {
+    fn parse_input(input: &str) -> <Self::Input as PuzzleInput>::Out<'_> {
         <Self::Input as PuzzleInput>::from_input(input)
     }
 
     fn run(
-        input: <Self::Input as PuzzleInput>::Out,
+        input: <Self::Input as PuzzleInput>::Out<'_>,
         parse_time: Duration,
     ) -> PuzzleSolution<Self::Output>;
 
@@ -261,7 +282,7 @@ impl ResultLine {
     where
         T: Display + 'static,
     {
-        Self::new(format!("Part {}", part), duration, Some(Box::new(solution)))
+        Self::new(format!("Part {part}"), duration, Some(Box::new(solution)))
     }
 
     pub fn note<T>(note: &T, duration: Duration) -> Self
@@ -341,11 +362,11 @@ macro_rules! input {
     };
 
     ($input_ty:ty) => {
-        $crate::As<$input_ty>
+        $crate::Parsing<$input_ty>
     };
 
     (parse $input_ty:ty) => {
-        $crate::Parsing<$input_ty>
+        $crate::StdFromStrParsing<$input_ty>
     };
 
     (blocks $input_ty:ty) => {
@@ -382,7 +403,7 @@ macro_rules! register {
 
             #[inline]
             fn run(
-                mut $input: <$input_ty as $crate::PuzzleInput>::Out,
+                mut $input: <$input_ty as $crate::PuzzleInput>::Out<'_>,
                 parse_time: ::std::time::Duration,
             ) -> $crate::PuzzleSolution<Self::Output> {
                 let start = ::std::time::Instant::now();

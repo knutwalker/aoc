@@ -1,12 +1,11 @@
 use parse_display::FromStr;
 use std::{collections::HashSet, ops::RangeInclusive};
 
-type Input = String;
 type Output = usize;
 
 register!(
     "input/day16.txt";
-    (input: input!(chunk Input)) -> Output {
+    (input: input!(chunk str)) -> Output {
         run1(&input);
         run2(&input);
     }
@@ -59,7 +58,7 @@ struct RuleRange {
     max: Output,
 }
 
-fn run1(input: &[Vec<Input>]) -> Output {
+fn run1(input: &[Vec<&str>]) -> Output {
     let mut chunks = input.iter();
     let rules = chunks.next().unwrap();
     let _my_tickets = chunks.next().unwrap();
@@ -84,7 +83,7 @@ fn run1(input: &[Vec<Input>]) -> Output {
         .sum()
 }
 
-fn run2(input: &[Vec<Input>]) -> Output {
+fn run2(input: &[Vec<&str>]) -> Output {
     let mut chunks = input.iter();
 
     let rules = chunks.next().unwrap();
@@ -138,11 +137,7 @@ fn run2(input: &[Vec<Input>]) -> Output {
                     rules_in_order[idx] = rule.take();
                     solved.insert(idx);
                 } else {
-                    assert!(
-                        !candidates.is_empty(),
-                        "rule not valid anywhere: {:#?}",
-                        rule
-                    );
+                    assert!(!candidates.is_empty(), "rule not valid anywhere: {rule:#?}");
                 }
             }
         }

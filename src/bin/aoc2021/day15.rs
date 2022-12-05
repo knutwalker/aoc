@@ -2,26 +2,25 @@ use fxhash::{FxBuildHasher, FxHashSet};
 use priority_queue::PriorityQueue;
 use std::cmp::Reverse;
 
-type Input = Vec<u8>;
 type Output = u32;
 
 register!(
     "input/day15.txt";
-    (input: input!(Input)) -> Output {
+    (input: input!([u8])) -> Output {
         part1(&input);
         part2(&input);
     }
 );
 
-fn part1(items: &[Input]) -> Output {
+fn part1(items: &[&[u8]]) -> Output {
     dijkstra(items, 1, (0, 0))
 }
 
-fn part2(items: &[Input]) -> Output {
+fn part2(items: &[&[u8]]) -> Output {
     dijkstra(items, 5, (0, 0))
 }
 
-fn dijkstra(g: &[Vec<u8>], scale: u16, start: (u16, u16)) -> u32 {
+fn dijkstra(g: &[&[u8]], scale: u16, start: (u16, u16)) -> u32 {
     let mut visited = FxHashSet::default();
     let size = g.len() as u16;
     let max = size * scale;

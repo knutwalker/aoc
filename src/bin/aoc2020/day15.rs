@@ -1,23 +1,22 @@
-type Input = String;
 type Output = usize;
 
 register!(
     "input/day15.txt";
-    (input: input!(Input)) -> Output {
+    (input: input!(str)) -> Output {
         run1(&input);
         run2(&input);
     }
 );
 
-fn run1(input: &[Input]) -> Output {
+fn run1(input: &[&str]) -> Output {
     run_any(input, 2020)
 }
 
-fn run2(input: &[Input]) -> Output {
+fn run2(input: &[&str]) -> Output {
     run_any(input, 30_000_000)
 }
 
-fn run_any(input: &[Input], stop_at: Output) -> Output {
+fn run_any(input: &[&str], stop_at: Output) -> Output {
     let nums = input[0]
         .split(',')
         .map(str::parse::<Output>)
@@ -56,7 +55,7 @@ mod tests {
 
     #[test]
     fn test_pt1() {
-        assert_eq!(436, run1([String::from("0,3,6")].as_ref()));
+        assert_eq!(436, run1(["0,3,6"].as_ref()));
     }
 
     #[bench]

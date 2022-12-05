@@ -1,6 +1,5 @@
-use aoc::ProcessInput;
+use aoc::{Parse, ProcessInput};
 use indexmap::IndexSet;
-use std::{convert::Infallible, str::FromStr};
 
 type Input = Cave;
 type Output = usize;
@@ -77,11 +76,11 @@ impl Cave {
 }
 
 impl ProcessInput for Cave {
-    type In = input!(parse Connection);
+    type In = input!(ConnectionParser);
 
-    type Out = Self;
+    type Out<'a> = Self;
 
-    fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         let mut ids = IndexSet::new();
         let mut graph = [0; 16];
 
@@ -114,41 +113,45 @@ impl ProcessInput for Cave {
 }
 
 #[derive(Clone, Debug)]
-pub struct Connection {
-    source: CaveType,
-    target: CaveType,
+pub struct Connection<'a> {
+    source: CaveType<'a>,
+    target: CaveType<'a>,
 }
 
-impl FromStr for Connection {
-    type Err = Infallible;
+pub enum ConnectionParser {}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl Parse for ConnectionParser {
+    type Out<'a> = Connection<'a>;
+
+    fn parse_from(s: &str) -> Self::Out<'_> {
         let (source, target) = s.split_once('-').unwrap();
-        Ok(Self {
-            source: source.parse()?,
-            target: target.parse()?,
-        })
+        Connection {
+            source: CaveTypeParser::parse_from(source),
+            target: CaveTypeParser::parse_from(target),
+        }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum CaveType {
+pub enum CaveType<'a> {
     Start,
     End,
-    Small(String),
-    Big(String),
+    Small(&'a str),
+    Big(&'a str),
 }
 
-impl FromStr for CaveType {
-    type Err = Infallible;
+pub enum CaveTypeParser {}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match s {
-            "start" => Self::Start,
-            "end" => Self::End,
-            small if small.as_bytes()[0].is_ascii_lowercase() => Self::Small(small.to_string()),
-            big => Self::Big(big.to_string()),
-        })
+impl Parse for CaveTypeParser {
+    type Out<'a> = CaveType<'a>;
+
+    fn parse_from(s: &str) -> Self::Out<'_> {
+        match s {
+            "start" => CaveType::Start,
+            "end" => CaveType::End,
+            small if small.as_bytes()[0].is_ascii_lowercase() => CaveType::Small(small),
+            big => CaveType::Big(big),
+        }
     }
 }
 

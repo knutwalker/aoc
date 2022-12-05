@@ -624,9 +624,9 @@ impl FromIterator<u16> for Board {
 }
 
 impl PuzzleInput for Board {
-    type Out = (Self, Self);
+    type Out<'a> = (Self, Self);
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let colors = input.bytes().filter_map(|b| match b {
             b'A' => Some(Room::A),
             b'B' => Some(Room::B),
@@ -745,10 +745,7 @@ mod tests {
             board = next;
             while let Some((next, score)) = board.try_move_from_hallway() {
                 total += score;
-                println!(
-                    "score: {:>8}, total: {:>8}  move from hallway",
-                    score, total
-                );
+                println!("score: {score:>8}, total: {total:>8}  move from hallway");
                 println!("{next}");
                 board = next;
             }

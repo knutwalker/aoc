@@ -1,27 +1,22 @@
-use aoc::{ProcessInput, PuzzleInput};
+use aoc::ProcessInput;
 use std::collections::{HashMap, HashSet};
 
-type Input = String;
 type Output = String;
 
 register!(
     "input/day21.txt";
-    (input: input!(process AllergenList)) -> Output {
+    (input: input!(process AllergensInput)) -> Output {
         part1(&input);
         part2(&input);
     }
 );
 
 fn part1(input: &AllergenList) -> Output {
-    let allergenic_ingredients = input
-        .confirmed
-        .values()
-        .map(String::as_str)
-        .collect::<HashSet<_>>();
+    let allergenic_ingredients = input.confirmed.values().collect::<HashSet<_>>();
     let pt1 = input
         .all_ingredients
         .iter()
-        .filter(|x| !allergenic_ingredients.contains(x.as_str()))
+        .filter(|x| !allergenic_ingredients.contains(x))
         .count();
 
     format!("{pt1}")
@@ -31,7 +26,7 @@ fn part2(input: &AllergenList) -> Output {
     let mut ingredients = input
         .confirmed
         .iter()
-        .map(|(k, v)| (k.as_str(), v.as_str()))
+        .map(|(&k, &v)| (k, v))
         .collect::<Vec<_>>();
     ingredients.sort_unstable_by_key(|(allergen, _)| *allergen);
     let ingredients = ingredients
@@ -42,17 +37,19 @@ fn part2(input: &AllergenList) -> Output {
     ingredients.join(",")
 }
 
-pub struct AllergenList {
-    all_ingredients: Vec<String>,
-    confirmed: HashMap<String, String>,
+pub struct AllergenList<'a> {
+    all_ingredients: Vec<&'a str>,
+    confirmed: HashMap<&'a str, &'a str>,
 }
 
-impl ProcessInput for AllergenList {
-    type In = input!(Input);
+pub struct AllergensInput;
 
-    type Out = Self;
+impl ProcessInput for AllergensInput {
+    type In = input!(str);
 
-    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out {
+    type Out<'a> = AllergenList<'a>;
+
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         let mut all_ingredients = Vec::<&str>::new();
         let mut possible = HashMap::<_, Vec<_>>::new();
 
@@ -98,13 +95,7 @@ impl ProcessInput for AllergenList {
             }
         }
 
-        let all_ingredients = all_ingredients.into_iter().map(String::from).collect();
-        let confirmed = confirmed
-            .into_iter()
-            .map(|(k, v)| (String::from(k), String::from(v)))
-            .collect();
-
-        Self {
+        AllergenList {
             all_ingredients,
             confirmed,
         }

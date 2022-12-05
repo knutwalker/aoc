@@ -1,3 +1,5 @@
+use aoc::Parse;
+
 type Input = u64;
 type Output = usize;
 

@@ -3,20 +3,19 @@ use std::{
     iter::successors,
 };
 
-type Input = Vec<u8>;
 type Output = usize;
 type Cell = (isize, isize, isize, isize);
 type Grid = HashSet<Cell>;
 
 register!(
     "input/day17.txt";
-    (input: input!(Input)) -> Output {
+    (input: input!([u8])) -> Output {
         run_any(&input, false);
         run_any(&input, true);
     }
 );
 
-fn run_any(input: &[Input], fourth_dim: bool) -> Output {
+fn run_any(input: &[&[u8]], fourth_dim: bool) -> Output {
     let mut grid = Grid::with_capacity(4096);
     for (z, row) in input.iter().enumerate() {
         for (x, c) in row.iter().enumerate() {

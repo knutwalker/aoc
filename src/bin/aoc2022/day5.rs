@@ -1,6 +1,6 @@
 use std::{collections::VecDeque, rc::Rc};
 
-use aoc::PuzzleInput;
+use aoc::{Parse, PuzzleInput};
 
 type Output = String;
 
@@ -67,8 +67,9 @@ struct Stacks {
     stacks: Vec<Vec<u8>>,
 }
 
-impl From<&str> for Stacks {
-    fn from(value: &str) -> Self {
+impl Parse for Stacks {
+    type Out<'a> = Self;
+    fn parse_from(value: &str) -> Self {
         let (input, ids) = value.rsplit_once('\n').unwrap();
 
         let ids = ids
@@ -124,12 +125,12 @@ impl From<&str> for Instruction {
 }
 
 impl PuzzleInput for Input {
-    type Out = Self;
+    type Out<'a> = Self;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let (stacks, procedure) = input.split_once("\n\n").unwrap();
 
-        let stacks = Stacks::from(stacks);
+        let stacks = Stacks::parse_from(stacks);
         let instructions = aoc::lines(procedure).map(Instruction::from).collect();
 
         Self {

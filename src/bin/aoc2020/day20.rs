@@ -1,12 +1,11 @@
 use aoc::ProcessInput;
-use std::{collections::HashMap, iter::successors, iter::FromIterator, string::String};
+use std::{collections::HashMap, iter::successors, iter::FromIterator};
 
-type Input = String;
 type Output = u64;
 
 register!(
     "input/day20.txt";
-    (input: input!(process Map)) -> Output {
+    (input: input!(process MapProcessor)) -> Output {
         part1(&input);
         part2(input);
     }
@@ -97,7 +96,7 @@ fn try_solve_from_top_left(
     Some(image)
 }
 
-fn build_image(puzzle: Vec<Vec<Tile>>, mut blocks: HashMap<i16, Vec<String>>) -> Vec<Vec<u8>> {
+fn build_image(puzzle: Vec<Vec<Tile>>, mut blocks: HashMap<i16, Vec<&str>>) -> Vec<Vec<u8>> {
     puzzle
         .into_iter()
         .flat_map(|row| {
@@ -106,9 +105,9 @@ fn build_image(puzzle: Vec<Vec<Tile>>, mut blocks: HashMap<i16, Vec<String>>) ->
                     let block = blocks.remove(&cell.id).unwrap();
                     // let dim = block.len() - 1;
 
-                    let lines = block.into_iter().skip(1).map(String::into_bytes);
+                    let lines = block.into_iter().skip(1).map(str::as_bytes);
                     let mut block = match cell.orientation {
-                        Dir::Up => lines.collect(),
+                        Dir::Up => lines.map(<[u8]>::to_vec).collect(),
                         x => {
                             let mut block = rotate(10, lines);
                             for _ in 1..(x as u8) {
@@ -486,24 +485,26 @@ impl<'a> FromIterator<&'a str> for Tile {
 }
 
 #[derive(Clone)]
-pub struct Map {
+pub struct Map<'a> {
     dim: usize,
     puzzle: Vec<Vec<Tile>>,
-    blocks: HashMap<i16, Vec<String>>,
+    blocks: HashMap<i16, Vec<&'a str>>,
 }
 
-impl ProcessInput for Map {
-    type In = input!(chunk Input);
+pub struct MapProcessor;
 
-    type Out = Self;
+impl ProcessInput for MapProcessor {
+    type In = input!(chunk str);
 
-    fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
+    type Out<'a> = Map<'a>;
+
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         let mut edges = Edges::new();
         let mut tiles = Tiles::new();
         let mut blocks = HashMap::new();
 
         for block in input {
-            let tile = block.iter().map(String::as_str).collect::<Tile>();
+            let tile = block.iter().copied().collect::<Tile>();
             for edge in tile.edges.edges() {
                 edges
                     .entry(edge)
@@ -524,7 +525,7 @@ impl ProcessInput for Map {
         let dim = (tiles.len() as f32).sqrt() as usize;
         let puzzle = solve_puzzle(dim, &edges, &tiles);
 
-        Self {
+        Map {
             dim,
             puzzle,
             blocks,

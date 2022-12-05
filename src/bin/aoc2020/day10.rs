@@ -47,9 +47,9 @@ pub struct Input;
 impl ProcessInput for Input {
     type In = input!(parse u64);
 
-    type Out = <Self::In as PuzzleInput>::Out;
+    type Out<'a> = <Self::In as PuzzleInput>::Out<'a>;
 
-    fn process(mut input: <Self::In as PuzzleInput>::Out) -> Self::Out {
+    fn process(mut input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         input.sort_unstable();
         input.insert(0, 0);
         input.push(3 + *input.iter().max().unwrap());

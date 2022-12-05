@@ -1,13 +1,12 @@
-use aoc::{MinMax, ProcessInput};
+use aoc::{MinMax, Parse, ProcessInput};
 use fxhash::{FxBuildHasher, FxHashMap};
-use std::{array::TryFromSliceError, str::FromStr};
 use tap::Tap;
 
 type Output = usize;
 
 register!(
     "input/day14.txt";
-    (input: input!(process Input)) -> Output {
+    (input: input!(process InputParser)) -> Output {
         part1(&input);
         part2(&input);
     }
@@ -66,38 +65,45 @@ fn count(Input { template, pairs }: &Input, rounds: usize) -> Output {
 }
 
 #[derive(Clone, Debug)]
-pub enum In {
-    Template(String),
+pub enum In<'a> {
+    Template(&'a str),
     Ins([u8; 2], u8),
 }
 
-impl FromStr for In {
-    type Err = TryFromSliceError;
+pub enum InParser {}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(if let Some((adj, ins)) = s.split_once(" -> ") {
-            Self::Ins(adj.as_bytes().try_into()?, ins.bytes().next().unwrap())
+impl Parse for InParser {
+    type Out<'a> = In<'a>;
+
+    fn parse_from(s: &str) -> Self::Out<'_> {
+        if let Some((adj, ins)) = s.split_once(" -> ") {
+            In::Ins(
+                adj.as_bytes().try_into().unwrap(),
+                ins.bytes().next().unwrap(),
+            )
         } else {
-            Self::Template(s.to_string())
-        })
+            In::Template(s)
+        }
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct Input {
-    template: String,
+pub struct Input<'a> {
+    template: &'a str,
     pairs: FxHashMap<[u8; 2], u8>,
 }
 
-impl ProcessInput for Input {
-    type In = input!(parse In);
+pub struct InputParser;
 
-    type Out = Self;
+impl ProcessInput for InputParser {
+    type In = input!(InParser);
 
-    fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
+    type Out<'a> = Input<'a>;
+
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         let (tpl, in_pairs) = input.split_first().unwrap();
         let In::Template(tpl) = tpl else { unreachable!() };
-        let template = tpl.clone();
+        let template = *tpl;
 
         let pairs = in_pairs
             .iter()
@@ -107,7 +113,7 @@ impl ProcessInput for Input {
             })
             .collect();
 
-        Self { template, pairs }
+        Input { template, pairs }
     }
 }
 

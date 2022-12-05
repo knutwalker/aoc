@@ -29,23 +29,23 @@ fn part2(passports: &[Passport]) -> usize {
 }
 
 #[derive(Default, Debug)]
-pub struct Passport(HashMap<String, String>);
+pub struct Passport<'a>(HashMap<&'a str, &'a str>);
 
-impl Deref for Passport {
-    type Target = HashMap<String, String>;
+impl<'a> Deref for Passport<'a> {
+    type Target = HashMap<&'a str, &'a str>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl DerefMut for Passport {
+impl<'a> DerefMut for Passport<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl Passport {
+impl<'a> Passport<'a> {
     fn is_valid_pt1(&self) -> bool {
         self.contains_key("byr")
             && self.contains_key("iyr")
@@ -109,11 +109,11 @@ impl Passport {
 pub struct Passports;
 
 impl ProcessInput for Passports {
-    type In = input!(chunk String);
+    type In = input!(chunk str);
 
-    type Out = Vec<Passport>;
+    type Out<'a> = Vec<Passport<'a>>;
 
-    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         input
             .into_iter()
             .map(|block| {
@@ -121,8 +121,8 @@ impl ProcessInput for Passports {
                     for input in line.split_ascii_whitespace() {
                         let mut parts = input.splitn(2, ':');
                         pp.insert(
-                            parts.next().expect("no field").to_string(),
-                            parts.next().expect("no content").to_string(),
+                            parts.next().expect("no field"),
+                            parts.next().expect("no content"),
                         );
                     }
                     pp

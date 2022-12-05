@@ -2,40 +2,54 @@ use std::iter::successors;
 
 register!(
     "input/day11.txt";
-    (input: input!(Vec<u8>)) -> usize {
-        run_any(input.clone(), 1, 4);
-        run_any(input, usize::max_value(), 5);
+    (input: input!([u8])) -> usize {
+        run_any(&input, 1, 4);
+        run_any(&input, usize::max_value(), 5);
     }
 );
 
-fn run_any(mut input: Vec<Vec<u8>>, dist: usize, full: usize) -> usize {
+fn run_any(input: &[&[u8]], dist: usize, full: usize) -> usize {
+    let mut new_input = next_input(input, dist, full);
+    if new_input == input {
+        return score(new_input);
+    }
     loop {
-        let new_input = input
-            .iter()
-            .enumerate()
-            .map(|(y, row)| {
-                row.iter()
-                    .enumerate()
-                    .map(|(x, col)| match col {
-                        b'L' if occupied_seats(x, y, dist, &input) == 0 => b'#',
-                        b'#' if occupied_seats(x, y, dist, &input) >= full => b'L',
-                        otherwise => *otherwise,
-                    })
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
-        if new_input == input {
-            break new_input
-                .into_iter()
-                .flatten()
-                .filter(|&c| c == b'#')
-                .count();
+        let prev_input = new_input;
+        new_input = next_input(&prev_input, dist, full);
+        if new_input == prev_input {
+            return score(new_input);
         }
-        input = new_input;
     }
 }
 
-fn occupied_seats(x: usize, y: usize, limit: usize, rows: &[Vec<u8>]) -> usize {
+fn next_input<T>(input: &[T], dist: usize, full: usize) -> Vec<Vec<u8>>
+where
+    T: Input,
+{
+    input
+        .iter()
+        .enumerate()
+        .map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .map(|(x, col)| match col {
+                    b'L' if occupied_seats(x, y, dist, input) == 0 => b'#',
+                    b'#' if occupied_seats(x, y, dist, input) >= full => b'L',
+                    otherwise => otherwise,
+                })
+                .collect()
+        })
+        .collect()
+}
+
+fn score(input: Vec<Vec<u8>>) -> usize {
+    input.into_iter().flatten().filter(|c| *c == b'#').count()
+}
+
+fn occupied_seats<T>(x: usize, y: usize, limit: usize, rows: &[T]) -> usize
+where
+    T: Input,
+{
     (-1..=1)
         .flat_map(|dx| {
             (-1..=1)
@@ -43,7 +57,7 @@ fn occupied_seats(x: usize, y: usize, limit: usize, rows: &[Vec<u8>]) -> usize {
                 .map(move |dy| {
                     go(x, y, dx, dy, rows[y].len(), rows.len())
                         .take(limit)
-                        .map(|(x, y)| rows[y][x])
+                        .map(|(x, y)| rows[y].get(x))
                         .take_while(|&s| s != b'L')
                         .any(|s| s == b'#')
                 })
@@ -66,6 +80,52 @@ fn go(
     })
     .skip(1)
     .map(|(x, y)| (x as usize, y as usize))
+}
+
+trait Input {
+    type Iter<'a>: Iterator<Item = u8> + 'a
+    where
+        Self: 'a;
+
+    fn iter(&self) -> Self::Iter<'_>;
+
+    fn len(&self) -> usize;
+
+    fn get(&self, index: usize) -> u8;
+}
+
+impl Input for Vec<u8> {
+    type Iter<'a> = std::iter::Copied<std::slice::Iter<'a, u8>>;
+
+    fn iter(&self) -> Self::Iter<'_> {
+        (**self).iter().copied()
+    }
+
+    fn len(&self) -> usize {
+        (**self).len()
+    }
+
+    fn get(&self, index: usize) -> u8 {
+        self[index]
+    }
+}
+
+impl<'x> Input for &'x [u8] {
+    type Iter<'a> = std::iter::Copied<std::slice::Iter<'a, u8>>
+    where
+        Self: 'a;
+
+    fn iter(&self) -> Self::Iter<'_> {
+        (*self).iter().copied()
+    }
+
+    fn len(&self) -> usize {
+        (*self).len()
+    }
+
+    fn get(&self, index: usize) -> u8 {
+        self[index]
+    }
 }
 
 #[cfg(test)]
@@ -117,7 +177,7 @@ mod tests {
         "
         .trim()
         .lines()
-        .map(|s| s.trim().as_bytes().to_vec())
+        .map(|s| s.trim().as_bytes())
         .collect::<Vec<_>>();
 
         assert_eq!(8, occupied_seats(3, 4, usize::max_value(), &input));
@@ -132,7 +192,7 @@ mod tests {
         "
         .trim()
         .lines()
-        .map(|s| s.trim().as_bytes().to_vec())
+        .map(|s| s.trim().as_bytes())
         .collect::<Vec<_>>();
 
         assert_eq!(0, occupied_seats(1, 1, usize::max_value(), &input));
@@ -151,7 +211,7 @@ mod tests {
         "
         .trim()
         .lines()
-        .map(|s| s.trim().as_bytes().to_vec())
+        .map(|s| s.trim().as_bytes())
         .collect::<Vec<_>>();
 
         assert_eq!(0, occupied_seats(3, 3, usize::max_value(), &input));
@@ -173,7 +233,7 @@ mod tests {
         "
         .trim()
         .lines()
-        .map(|s| s.trim().as_bytes().to_vec())
+        .map(|s| s.trim().as_bytes())
         .collect::<Vec<_>>();
 
         assert_eq!(0, occupied_seats(3, 0, usize::max_value(), &input));
@@ -189,12 +249,12 @@ mod tests {
     #[bench]
     fn bench_pt1(b: &mut Bencher) {
         let input = Solver::parse_input(Solver::puzzle_input());
-        b.iter(|| run_any(input.clone(), 1, 4));
+        b.iter(|| run_any(&input, 1, 4));
     }
 
     #[bench]
     fn bench_pt2(b: &mut Bencher) {
         let input = Solver::parse_input(Solver::puzzle_input());
-        b.iter(|| run_any(input.clone(), usize::max_value(), 5));
+        b.iter(|| run_any(&input, usize::max_value(), 5));
     }
 }

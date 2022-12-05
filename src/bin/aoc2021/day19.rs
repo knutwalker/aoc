@@ -37,9 +37,9 @@ pub struct Map {
 }
 
 impl PuzzleInput for Map {
-    type Out = Self;
+    type Out<'a> = Self;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let mut unmapped_scanners = input
             .split("\n\n")
             .map(|scanner| {
@@ -146,10 +146,7 @@ impl Scanner {
                         } else if -v == dz {
                             (Coord::Z, -1)
                         } else {
-                            panic!(
-                                "Unmatched diff: {}, available are {}, {}, {}",
-                                v, dx, dy, dz
-                            );
+                            panic!("Unmatched diff: {v}, available are {dx}, {dy}, {dz}");
                         }
                     });
 

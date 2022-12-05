@@ -1,3 +1,5 @@
+use aoc::Parse;
+
 type Output = u64;
 
 register!(
@@ -53,8 +55,9 @@ const LOSE: Output = 0;
 
 pub struct Input([char; 2]);
 
-impl From<&str> for Input {
-    fn from(value: &str) -> Self {
+impl Parse for Input {
+    type Out<'a> = Self;
+    fn parse_from(value: &str) -> Self {
         let mut chars = value.chars();
         let (Some(fst), Some(' '), Some(snd), None) = (
             chars.next(),

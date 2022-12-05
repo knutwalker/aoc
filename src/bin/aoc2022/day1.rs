@@ -30,9 +30,9 @@ pub struct Calories;
 impl ProcessInput for Calories {
     type In = input!(parse Input);
 
-    type Out = Input;
+    type Out<'a> = Input;
 
-    fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         input.into_iter().sum::<u64>()
     }
 }

@@ -1,3 +1,5 @@
+use aoc::Parse;
+
 type Input = Rucksack;
 type Output = u32;
 
@@ -29,8 +31,10 @@ fn part2(items: &[Input]) -> Output {
 
 pub struct Rucksack(u64, u64);
 
-impl From<&str> for Rucksack {
-    fn from(s: &str) -> Self {
+impl Parse for Rucksack {
+    type Out<'a> = Self;
+
+    fn parse_from(s: &str) -> Self {
         fn to_prio(item: u8) -> u64 {
             1 << ((item & 0x1F) + 26 * (1 - u8::from(item & 0x20 == 0x20)))
         }

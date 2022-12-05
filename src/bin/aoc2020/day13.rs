@@ -1,14 +1,12 @@
-type Input = String;
-
 register!(
     "input/day13.txt";
-    (input: input!(Input)) -> i64 {
+    (input: input!(str)) -> i64 {
         run1(&input);
         run2(&input);
     }
 );
 
-fn run1(input: &[Input]) -> i64 {
+fn run1(input: &[&str]) -> i64 {
     let time = input[0].parse::<i64>().unwrap();
     input[1]
         .split(',')
@@ -19,7 +17,7 @@ fn run1(input: &[Input]) -> i64 {
         .unwrap()
 }
 
-fn run2(input: &[Input]) -> i64 {
+fn run2(input: &[&str]) -> i64 {
     fn gcd(m: usize, n: usize) -> usize {
         n.checked_rem(m).map_or(n, |n| gcd(n, m))
     }
@@ -73,34 +71,19 @@ mod tests {
 
     #[test]
     fn test_p2_0() {
-        assert_eq!(
-            1_068_781,
-            run2([String::new(), String::from("7,13,x,x,59,x,31,19")].as_ref())
-        );
+        assert_eq!(1_068_781, run2(["", "7,13,x,x,59,x,31,19"].as_ref()));
     }
 
     #[test]
     fn test_p2_1() {
-        assert_eq!(
-            754_018,
-            run2([String::new(), String::from("67,7,59,61")].as_ref())
-        );
-        assert_eq!(
-            779_210,
-            run2([String::new(), String::from("67,x,7,59,61")].as_ref())
-        );
-        assert_eq!(
-            1_261_476,
-            run2([String::new(), String::from("67,7,x,59,61")].as_ref())
-        );
+        assert_eq!(754_018, run2(["", "67,7,59,61"].as_ref()));
+        assert_eq!(779_210, run2(["", "67,x,7,59,61"].as_ref()));
+        assert_eq!(1_261_476, run2(["", "67,7,x,59,61"].as_ref()));
     }
 
     #[test]
     fn test_p2_2() {
-        assert_eq!(
-            1_202_161_486,
-            run2([String::new(), String::from("1789,37,47,1889")].as_ref())
-        );
+        assert_eq!(1_202_161_486, run2(["", "1789,37,47,1889"].as_ref()));
     }
 
     #[bench]
