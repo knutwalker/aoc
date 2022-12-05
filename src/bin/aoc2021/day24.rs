@@ -211,9 +211,9 @@ pub struct Op {
 impl ProcessInput for Op {
     type In = input!(parse Input);
 
-    type Out = Vec<Self>;
+    type Out<'a> = Vec<Self>;
 
-    fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         input
             .into_iter()
             .chain(std::iter::once(Ins::Inp(Reg::W)))

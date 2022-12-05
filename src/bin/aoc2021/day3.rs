@@ -1,3 +1,4 @@
+use aoc::Parse;
 use derive_more::Deref;
 use num_enum::TryFromPrimitive;
 use std::ops::AddAssign;
@@ -36,8 +37,10 @@ impl FromIterator<Bit> for Bits {
     }
 }
 
-impl From<&str> for Bits {
-    fn from(s: &str) -> Self {
+impl Parse for Bits {
+    type Out<'a> = Self;
+
+    fn parse_from(s: &str) -> Self::Out<'_> {
         s.bytes().map(|b| Bit::try_from(b).unwrap()).collect()
     }
 }

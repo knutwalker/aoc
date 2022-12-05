@@ -23,9 +23,9 @@ pub struct PasswordInput {
 }
 
 impl PuzzleInput for PasswordInput {
-    type Out = (usize, usize);
+    type Out<'a> = (usize, usize);
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         lines(input)
             .map(Self::parse)
             .map(|p| (usize::from(p.pt1), usize::from(p.pt2)))

@@ -5,7 +5,6 @@ use std::{
     iter::FromIterator,
 };
 
-type Input = String;
 type Output = usize;
 
 register!(
@@ -191,17 +190,17 @@ fn eval(deck: Deck) -> Output {
 pub struct DeckInput;
 
 impl ProcessInput for DeckInput {
-    type In = input!(chunk Input);
+    type In = input!(chunk str);
 
-    type Out = (Deck, Deck);
+    type Out<'a> = (Deck, Deck);
 
-    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         let mut players = input
             .into_iter()
             .map(|p| {
                 p.into_iter()
                     .skip(1)
-                    .map(|s| s.parse::<u8>())
+                    .map(str::parse)
                     .map(Result::unwrap)
                     .collect::<Deck>()
             })

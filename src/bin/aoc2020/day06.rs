@@ -1,5 +1,7 @@
 use std::ops::{BitAndAssign, BitOrAssign};
 
+use aoc::Parse;
+
 register!(
     "input/day6.txt";
     (input: input!(chunk Answers)) -> u32 {
@@ -11,8 +13,9 @@ register!(
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Answers(u32, bool);
 
-impl From<&str> for Answers {
-    fn from(input: &str) -> Self {
+impl Parse for Answers {
+    type Out<'a> = Self;
+    fn parse_from(input: &str) -> Self {
         Self(
             input
                 .bytes()

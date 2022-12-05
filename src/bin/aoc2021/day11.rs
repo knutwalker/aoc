@@ -78,9 +78,9 @@ impl Octo {
 }
 
 impl PuzzleInput for Octo {
-    type Out = Self;
+    type Out<'a> = Self;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let octo = lines(input)
             .flat_map(|s| s.bytes().map(|b| b - b'0').collect::<Vec<_>>().try_into())
             .collect::<Vec<_>>();

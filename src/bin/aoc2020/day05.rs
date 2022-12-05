@@ -1,5 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
+use aoc::Parse;
+
 register!(
     "input/day5.txt";
     (input: input!(Seat)) -> u16 {
@@ -11,8 +13,10 @@ register!(
 #[derive(Copy, Clone, Debug, Default, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Seat(u16);
 
-impl From<&str> for Seat {
-    fn from(input: &str) -> Self {
+impl Parse for Seat {
+    type Out<'a> = Self;
+
+    fn parse_from(input: &str) -> Self {
         Self(
             input
                 .bytes()
@@ -68,10 +72,10 @@ mod tests {
 
     #[test]
     fn test_parse_seat() {
-        assert_eq!(357, Seat::from("FBFBBFFRLR").0);
-        assert_eq!(567, Seat::from("BFFFBBFRRR").0);
-        assert_eq!(119, Seat::from("FFFBBBFRRR").0);
-        assert_eq!(820, Seat::from("BBFFBBFRLL").0);
+        assert_eq!(357, Seat::parse_from("FBFBBFFRLR").0);
+        assert_eq!(567, Seat::parse_from("BFFFBBFRRR").0);
+        assert_eq!(119, Seat::parse_from("FFFBBBFRRR").0);
+        assert_eq!(820, Seat::parse_from("BBFFBBFRLL").0);
     }
 
     #[test]

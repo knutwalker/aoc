@@ -1,11 +1,10 @@
-type Input = Vec<u8>;
 type Output = u64;
 
 register!(
     "input/day23.txt";
-    (input: input!(first input!(Input))) -> Output {
-        run1(&input, 100);
-        run2(&input);
+    (input: input!(first input!([u8]))) -> Output {
+        run1(input, 100);
+        run2(input);
     }
 );
 
@@ -115,12 +114,12 @@ mod tests {
     #[bench]
     fn bench_pt1(b: &mut Bencher) {
         let input = Solver::parse_input(Solver::puzzle_input());
-        b.iter(|| run1(&input, 100));
+        b.iter(|| run1(input, 100));
     }
 
     #[bench]
     fn bench_pt2(b: &mut Bencher) {
         let input = Solver::parse_input(Solver::puzzle_input());
-        b.iter(|| run2(&input));
+        b.iter(|| run2(input));
     }
 }

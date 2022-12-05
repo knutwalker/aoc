@@ -1,19 +1,18 @@
-type Input = Vec<u8>;
 type Output = u64;
 
 register!(
     "input/day18.txt";
-    (input: input!(Input)) -> Output {
+    (input: input!([u8])) -> Output {
         run1(&input);
         run2(&input);
     }
 );
 
-fn run1(input: &[Input]) -> Output {
+fn run1(input: &[&[u8]]) -> Output {
     input.iter().map(|l| eval1(l)).sum()
 }
 
-fn run2(input: &[Input]) -> Output {
+fn run2(input: &[&[u8]]) -> Output {
     input.iter().map(|l| eval2(l)).sum()
 }
 

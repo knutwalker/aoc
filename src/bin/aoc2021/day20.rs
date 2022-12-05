@@ -125,9 +125,9 @@ impl Display for Image {
 }
 
 impl PuzzleInput for Input {
-    type Out = Self;
+    type Out<'a> = Self;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let mut input = lines(input);
         let algorithm_input = input.next().expect("algorithm");
 

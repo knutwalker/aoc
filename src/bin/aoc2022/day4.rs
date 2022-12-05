@@ -1,5 +1,7 @@
 use std::ops::{RangeBounds, RangeInclusive};
 
+use aoc::Parse;
+
 type Output = usize;
 
 register!(
@@ -29,8 +31,10 @@ fn part2(items: &[Input]) -> Output {
 
 pub struct Input([RangeInclusive<u32>; 2]);
 
-impl From<&str> for Input {
-    fn from(input: &str) -> Self {
+impl Parse for Input {
+    type Out<'a> = Self;
+
+    fn parse_from(input: &str) -> Self {
         (|| {
             let (start, input) = input.split_once('-')?;
             let (end, input) = input.split_once(',')?;

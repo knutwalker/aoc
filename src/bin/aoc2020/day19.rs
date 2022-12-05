@@ -1,7 +1,6 @@
 use aoc::ProcessInput;
 use std::collections::HashMap;
 
-type Input = String;
 type Output = usize;
 type Rules = HashMap<u8, Rule>;
 
@@ -14,7 +13,7 @@ register!(
 );
 
 #[derive(Debug, Clone)]
-enum Rule {
+pub enum Rule {
     Lit(u8),
     Or(Box<[Box<[u8]>]>),
 }
@@ -42,7 +41,7 @@ fn matches_rule<'b>(rules: &Rules, rule: &Rule, bs: &'b [u8]) -> (bool, &'b [u8]
     }
 }
 
-fn run_any<F>(rules: &Rules, messages: &[Input], check: F) -> Output
+fn run_any<F>(rules: &Rules, messages: &[&str], check: F) -> Output
 where
     F: for<'b> Fn(&Rules, &'b [u8]) -> (bool, &'b [u8]),
 {
@@ -56,7 +55,7 @@ where
         .sum()
 }
 
-fn run1(rules: &Rules, messages: &[Input]) -> Output {
+fn run1(rules: &Rules, messages: &[&str]) -> Output {
     run_any(rules, messages, |rs, input| {
         matches_rule(rs, &rs[&0], input)
     })
@@ -91,18 +90,18 @@ fn matches_new_rule0<'b>(rules: &Rules, bs: &'b [u8]) -> (bool, &'b [u8]) {
     )
 }
 
-fn run2(rules: &Rules, messages: &[Input]) -> Output {
+fn run2(rules: &Rules, messages: &[&str]) -> Output {
     run_any(rules, messages, matches_new_rule0)
 }
 
-pub struct RulesInput(Rules, Vec<Input>);
+pub struct RulesInput;
 
 impl ProcessInput for RulesInput {
-    type In = input!(chunk Input);
+    type In = input!(chunk str);
 
-    type Out = Self;
+    type Out<'a> = (Rules, Vec<&'a str>);
 
-    fn process(mut input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
+    fn process(mut input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         let messages = input.pop().unwrap();
         let rules = input
             .pop()
@@ -134,7 +133,7 @@ impl ProcessInput for RulesInput {
             })
             .collect::<Rules>();
 
-        Self(rules, messages)
+        (rules, messages)
     }
 }
 

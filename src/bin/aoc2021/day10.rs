@@ -2,13 +2,13 @@ use aoc::MedianExt;
 
 register!(
     "input/day10.txt";
-    (input: input!(String)) -> u64 {
+    (input: input!([u8])) -> u64 {
         part1(&input);
         part2(&input);
     }
 );
 
-fn part1(items: &[String]) -> u64 {
+fn part1(items: &[&[u8]]) -> u64 {
     items
         .iter()
         .filter_map(|l| parse(l).err())
@@ -22,7 +22,7 @@ fn part1(items: &[String]) -> u64 {
         .sum()
 }
 
-fn part2(items: &[String]) -> u64 {
+fn part2(items: &[&[u8]]) -> u64 {
     items
         .iter()
         .filter_map(|l| parse(l).ok())
@@ -41,7 +41,7 @@ fn part2(items: &[String]) -> u64 {
         .median()
 }
 
-fn parse(bytes: impl AsRef<[u8]>) -> Result<String, u8> {
+fn parse(bytes: &[u8]) -> Result<String, u8> {
     fn parse(mut bytes: &[u8], level: usize, closer: u8) -> Result<Result<&[u8], String>, u8> {
         let mut closing = loop {
             match bytes.split_first() {
@@ -73,7 +73,6 @@ fn parse(bytes: impl AsRef<[u8]>) -> Result<String, u8> {
         Ok(Err(closing))
     }
 
-    let bytes = bytes.as_ref();
     match parse(bytes, 0, 0)? {
         Err(closing) => Ok(closing),
         Ok(rest) => unreachable!("Incomplete parse, remaining: {:?}", rest),

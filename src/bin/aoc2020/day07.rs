@@ -1,6 +1,4 @@
-use self::bags::{Bag, Bags};
-use aoc::{ProcessInput, PuzzleInput};
-use parse_display::FromStr;
+use aoc::{Parse, ProcessInput, PuzzleInput};
 use std::collections::HashMap;
 
 register!(
@@ -11,21 +9,21 @@ register!(
     }
 );
 
-pub type Rules = HashMap<String, Vec<Bag>>;
+pub type Rules<'a> = HashMap<&'a str, Vec<Bag<'a>>>;
 
 fn run1(input: &Rules) -> usize {
     let mut total = 0;
     for key in input.keys() {
-        let mut keys = vec![key.as_str()];
+        let mut keys = vec![key];
         while !keys.is_empty() {
             let key = keys.pop().unwrap();
             for Bag { color, .. } in &input[key] {
-                if color == "shiny gold" {
+                if *color == "shiny gold" {
                     total += 1;
                     keys.clear();
                     break;
                 }
-                keys.push(color.as_str());
+                keys.push(color);
             }
         }
     }
@@ -40,66 +38,77 @@ fn run2(input: &Rules) -> usize {
         for Bag { amount, color } in &input[next] {
             let amt = *amount * mult;
             total += amt;
-            q.push((amt, color.as_str()));
+            q.push((amt, color));
         }
     }
     total
 }
 
-#[derive(Clone, Debug, Default, FromStr)]
-#[display("{outer} bags contain {inner}.")]
-#[from_str(new = Self::from_parsed(outer, inner))]
-pub struct Rule {
-    outer: String,
-    inner: Vec<Bag>,
+#[derive(Clone, Debug, Default)]
+pub struct Rule<'a> {
+    outer: &'a str,
+    inner: Vec<Bag<'a>>,
 }
 
-impl Rule {
-    #[allow(clippy::needless_pass_by_value)]
-    fn from_parsed(outer: String, inner: String) -> Result<Self, parse_display::ParseError> {
+pub struct RuleParser;
+
+impl Parse for RuleParser {
+    type Out<'a> = Rule<'a>;
+
+    fn parse_from(s: &str) -> Self::Out<'_> {
+        let (outer, inner) = s.split_once(" bags contain ").unwrap();
         let inner = inner
             .split(", ")
-            .map(str::parse::<Bags>)
-            .filter_map(|bags| {
-                bags.map(|bags| match bags {
-                    Bags::Bag(bag) => Some(bag),
-                    Bags::NoOther => None,
-                })
-                .transpose()
+            .map(Bags::from)
+            .filter_map(|bags| match bags {
+                Bags::Bag(bag) => Some(bag),
+                Bags::NoOther => None,
             })
-            .collect::<Result<Vec<_>, _>>()?;
-        Ok(Self { outer, inner })
+            .collect();
+        Rule { outer, inner }
     }
 }
 
-#[allow(clippy::use_self)]
-mod bags {
-    use parse_display::FromStr;
+#[derive(Clone, Debug)]
+enum Bags<'a> {
+    NoOther,
+    Bag(Bag<'a>),
+}
 
-    #[derive(Clone, Debug, FromStr)]
-    pub enum Bags {
-        #[display("no other bags")]
-        NoOther,
-        #[from_str(regex = "(?P<0>.+) bags?")]
-        Bag(Bag),
+impl<'a> From<&'a str> for Bags<'a> {
+    fn from(s: &'a str) -> Self {
+        if s == "no other bags." {
+            Self::NoOther
+        } else {
+            Self::Bag(Bag::from(s.rsplit_once(' ').unwrap().0))
+        }
     }
+}
 
-    #[derive(Clone, Debug, FromStr)]
-    #[from_str(regex = "(?P<amount>[0-9]+) (?P<color>.+)")]
-    pub struct Bag {
-        pub(super) amount: usize,
-        pub(super) color: String,
+#[derive(Clone, Debug)]
+pub struct Bag<'a> {
+    amount: usize,
+    color: &'a str,
+}
+
+impl<'a> From<&'a str> for Bag<'a> {
+    fn from(s: &'a str) -> Self {
+        let (amount, color) = s.split_once(' ').unwrap();
+        Self {
+            amount: amount.parse().unwrap(),
+            color,
+        }
     }
 }
 
 pub struct RuleInput;
 
 impl ProcessInput for RuleInput {
-    type In = input!(parse Rule);
+    type In = input!(RuleParser);
 
-    type Out = Rules;
+    type Out<'a> = Rules<'a>;
 
-    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         input
             .into_iter()
             .map(|Rule { outer, inner }| (outer, inner))

@@ -64,9 +64,9 @@ pub struct Target {
 impl ProcessInput for Target {
     type In = input!(first input!(parse Self));
 
-    type Out = Vec<Output>;
+    type Out<'a> = Vec<Output>;
 
-    fn process(input: <Self::In as aoc::PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         let input = &input;
         (0..=*input.x.end())
             .flat_map(|x| {

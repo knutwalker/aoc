@@ -90,9 +90,9 @@ pub struct Bingo {
 }
 
 impl PuzzleInput for Bingo {
-    type Out = Self;
+    type Out<'a> = Self;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let mut blocks = input.split("\n\n");
 
         let draws = blocks.next().unwrap();

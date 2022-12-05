@@ -4,7 +4,6 @@ use std::{
     iter::successors,
 };
 
-type Input = Vec<u8>;
 type Output = usize;
 
 register!(
@@ -104,22 +103,21 @@ impl Iterator for Neighbors {
 pub struct Grids;
 
 impl ProcessInput for Grids {
-    type In = input!(Input);
+    type In = input!([u8]);
 
-    type Out = Grid;
+    type Out<'a> = Grid;
 
-    fn process(input: <Self::In as PuzzleInput>::Out) -> Self::Out {
+    fn process(input: <Self::In as PuzzleInput>::Out<'_>) -> Self::Out<'_> {
         input
             .into_iter()
             .map(|line| {
-                line.into_iter()
-                    .fold((0, 0, 0), |(x, y, step), dir| match dir {
-                        b'e' => (x + (2 >> step), y, 0),
-                        b'w' => (x - (2 >> step), y, 0),
-                        b'n' => (x, y + 1, 1),
-                        b's' => (x, y - 1, 1),
-                        x => unreachable!("invalid input: {}", x),
-                    })
+                line.iter().fold((0, 0, 0), |(x, y, step), dir| match dir {
+                    b'e' => (x + (2 >> step), y, 0),
+                    b'w' => (x - (2 >> step), y, 0),
+                    b'n' => (x, y + 1, 1),
+                    b's' => (x, y - 1, 1),
+                    x => unreachable!("invalid input: {}", x),
+                })
             })
             .fold(Grid::new(), |mut grid, (x, y, _)| {
                 let tile = (x, y);

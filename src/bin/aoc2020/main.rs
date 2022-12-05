@@ -12,9 +12,11 @@
     clippy::cast_possible_wrap,
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
+    clippy::fallible_impl_from,
     clippy::iter_with_drain,
     clippy::missing_const_for_fn,
-    clippy::similar_names
+    clippy::similar_names,
+    elided_lifetimes_in_paths
 )]
 
 #[macro_use]

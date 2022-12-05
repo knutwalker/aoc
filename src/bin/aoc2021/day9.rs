@@ -58,9 +58,9 @@ impl Default for Basin {
 pub struct WccInput;
 
 impl PuzzleInput for WccInput {
-    type Out = Wcc;
+    type Out<'a> = Wcc;
 
-    fn from_input(input: &str) -> Self::Out {
+    fn from_input(input: &str) -> Self::Out<'_> {
         let input = lines(input).map(str::as_bytes).collect::<Vec<_>>();
         let (h, w) = (input.len(), input[0].len());
         let size = w * h;
