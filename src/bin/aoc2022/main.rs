@@ -3,8 +3,10 @@
     array_windows,
     control_flow_enum,
     drain_filter,
+    get_many_mut,
     iter_array_chunks,
     iter_partition_in_place,
+    slice_take,
     test
 )]
 #![warn(
@@ -36,7 +38,7 @@ aoc_main!(
     2 => day2,
     3 => day3,
     4 => day4,
-    // 5 => day5,
+    5 => day5,
     // 6 => day6,
     // 7 => day7,
     // 8 => day8,
