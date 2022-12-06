@@ -1,3 +1,5 @@
+use std::simd::{u8x16, u8x4, Simd, SimdInt, SimdPartialEq};
+
 use aoc::Parse;
 use const_combinations::SliceExt;
 
@@ -13,19 +15,40 @@ register!(
 );
 
 fn part1(items: &[Input]) -> Output {
-    part::<4>(items)
+    items
+        .array_windows::<4>()
+        .position(|&chars| {
+            let word = u8x4::from_array(chars);
+            for (pos, c) in chars.into_iter().enumerate() {
+                let mut c = u8x4::splat(c);
+                c[pos] = 0;
+                if c.simd_eq(word).any() {
+                    return false;
+                }
+            }
+            true
+        })
+        .unwrap()
+        + 4
 }
 
 fn part2(items: &[Input]) -> Output {
-    part::<14>(items)
-}
-
-fn part<const N: usize>(items: &[Input]) -> Output {
+    let gather = Simd::from_array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
     items
-        .array_windows::<N>()
-        .position(|chars| chars.combinations().all(|[a, b]| a != b))
+        .array_windows::<14>()
+        .position(|&chars| {
+            let word = u8x16::gather_or_default(&chars, gather);
+            for (pos, c) in chars.into_iter().enumerate() {
+                let mut c = u8x16::splat(c);
+                c[pos] = 0;
+                if c.simd_eq(word).any() {
+                    return false;
+                }
+            }
+            true
+        })
         .unwrap()
-        + N
+        + 14
 }
 
 #[cfg(test)]

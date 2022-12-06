@@ -6,6 +6,7 @@
     get_many_mut,
     iter_array_chunks,
     iter_partition_in_place,
+    portable_simd,
     slice_take,
     test
 )]
