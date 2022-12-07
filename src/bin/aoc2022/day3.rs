@@ -41,8 +41,8 @@ impl Parse for Rucksack {
 
         let mid = s.len() / 2;
         let mut items = s.bytes().map(to_prio);
-        let mut fst = items.by_ref().take(mid).fold(0, |acc, item| acc | item);
-        let mut snd = items.fold(0, |acc, item| acc | item);
+        let fst = items.by_ref().take(mid).fold(0, |acc, item| acc | item);
+        let snd = items.fold(0, |acc, item| acc | item);
         Self(fst, snd)
     }
 }

@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, rc::Rc};
+use std::rc::Rc;
 
 use aoc::{Parse, PuzzleInput};
 
@@ -180,13 +180,13 @@ move 1 from 1 to 2
 
     #[bench]
     fn bench_pt1(b: &mut Bencher) {
-        let mut input = Solver::parse_input(Solver::puzzle_input());
+        let input = Solver::parse_input(Solver::puzzle_input());
         b.iter(|| part1(input.clone()));
     }
 
     #[bench]
     fn bench_pt2(b: &mut Bencher) {
-        let mut input = Solver::parse_input(Solver::puzzle_input());
+        let input = Solver::parse_input(Solver::puzzle_input());
         b.iter(|| part2(input.clone()));
     }
 }

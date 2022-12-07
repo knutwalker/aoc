@@ -1,7 +1,4 @@
-use std::simd::{u8x16, u8x4, Simd, SimdInt, SimdPartialEq};
-
-use aoc::Parse;
-use const_combinations::SliceExt;
+use std::simd::{u8x16, u8x4, Simd, SimdPartialEq};
 
 type Input = u8;
 type Output = usize;
