@@ -26,6 +26,8 @@
     clippy::iter_with_drain,
     clippy::missing_const_for_fn,
     clippy::redundant_pub_crate,
+    clippy::similar_names,
+    elided_lifetimes_in_paths
 )]
 
 #[macro_use]
@@ -40,7 +42,7 @@ aoc_main!(
     4 => day4,
     5 => day5,
     6 => day6,
-    // 7 => day7,
+    7 => day7,
     // 8 => day8,
     // 9 => day9,
     // 10 => day10,
