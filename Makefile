@@ -31,7 +31,7 @@ readme: README.md
 ### build targets
 
 target/release/%: .cargoinstalled Cargo.toml Cargo.lock src/lib.rs src/bin/%/*.rs src/bin/%/input/*.txt
-> RUSTFLAGS="-C link-arg=-s -C opt-level=3 -C target-cpu=native --emit=asm" cargo build $(CARGOFLAGS) --bin $* --release
+> cargo build $(CARGOFLAGS) --bin $* --release
 
 %_bench.jsonld: target/release/%
 > cargo bench --quiet --bin $* -- -Z unstable-options --format json > $@
