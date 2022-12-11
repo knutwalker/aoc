@@ -2,7 +2,7 @@ use fxhash::{FxBuildHasher, FxHashSet};
 use std::{num::ParseIntError, str::FromStr};
 
 type Input = In;
-type Output = String;
+type Output = aoc::Output<usize, String>;
 
 register!(
     "input/day13.txt";
@@ -13,7 +13,7 @@ register!(
 );
 
 fn part1(items: &[Input]) -> Output {
-    fold(items, 1).len().to_string()
+    Output::Part1(fold(items, 1).len())
 }
 
 fn part2(items: &[Input]) -> Output {
@@ -41,7 +41,7 @@ fn part2(items: &[Input]) -> Output {
         grid[y].replace_range(x..=x, "#");
     }
 
-    grid.join("\n")
+    Output::Part2(grid.join("\n"))
 }
 
 fn fold(items: &[Input], mut amount: usize) -> FxHashSet<[u32; 2]> {
@@ -129,10 +129,10 @@ mod tests {
         fold along x=5
         "#;
         let (res1, res2) = Solver::run_on(input);
-        assert_eq!(res1, 17.to_string());
+        assert_eq!(res1, Output::Part1(17));
         assert_eq!(
             res2,
-            String::from(
+            Output::Part2(String::from(
                 r#"
 #####
 #...#
@@ -143,17 +143,17 @@ mod tests {
 .....
                 "#
                 .trim()
-            )
+            ))
         );
     }
 
     #[test]
     fn test() {
         let (res1, res2) = Solver::run_on_input();
-        assert_eq!(res1, 638.to_string());
+        assert_eq!(res1, Output::Part1(638));
         assert_eq!(
             res2,
-            String::from(
+            Output::Part2(String::from(
                 r#"
 .##....##..##..#..#.###...##..###..###..
 #..#....#.#..#.#.#..#..#.#..#.#..#.#..#.
@@ -163,7 +163,7 @@ mod tests {
 .##...##...##..#..#.###..#..#.#....###..
                 "#
                 .trim()
-            )
+            ))
         );
     }
 
