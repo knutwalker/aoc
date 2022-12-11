@@ -92,6 +92,25 @@ impl<T: Ord + Copy> MedianExt<T> for Vec<T> {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Output<P1, P2> {
+    Part1(P1),
+    Part2(P2),
+}
+
+impl<P1, P2> std::fmt::Display for Output<P1, P2>
+where
+    P1: std::fmt::Display,
+    P2: std::fmt::Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Part1(x) => x.fmt(f),
+            Self::Part2(x) => x.fmt(f),
+        }
+    }
+}
+
 pub trait Parse {
     type Out<'a>;
     fn parse_from(s: &str) -> Self::Out<'_>;

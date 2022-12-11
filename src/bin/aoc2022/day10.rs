@@ -1,6 +1,7 @@
 use aoc::PuzzleInput;
 
 type Input = Reg;
+type Output = aoc::Output<Reg, String>;
 
 register!(
     "input/day10.txt";
@@ -66,21 +67,6 @@ impl PuzzleInput for Parser {
             .flatten()
             .flatten()
             .collect()
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Output {
-    Part1(i32),
-    Part2(String),
-}
-
-impl std::fmt::Display for Output {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Part1(x) => x.fmt(f),
-            Self::Part2(x) => x.fmt(f),
-        }
     }
 }
 
