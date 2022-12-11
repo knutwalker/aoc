@@ -44,31 +44,27 @@ fn part2(items: &[Input]) -> Output {
 
 pub enum Parser {}
 
-type Cycle = u32;
 type Reg = i32;
 
 impl PuzzleInput for Parser {
     type Out<'a> = Vec<Reg>;
 
     fn from_input(input: &str) -> Self::Out<'_> {
-        let mut reg = 1;
-        let mut cycle = 0;
-
         aoc::lines(input)
-            .flat_map(|line| {
-                if line.starts_with('n') {
-                    let res = [(Cycle::MAX, Reg::MAX), (cycle + 1, reg)];
-                    cycle += 1;
-                    res
+            .scan((0, 1), |(cycle, reg), line| {
+                let r = *reg;
+                Some(if line.starts_with('n') {
+                    *cycle += 1;
+                    [None, Some(r)]
                 } else {
+                    *cycle += 2;
                     let x: Reg = line[5..].parse().unwrap();
-                    let res = [(cycle + 1, reg), (cycle + 2, reg)];
-                    cycle += 2;
-                    reg += x;
-                    res
-                }
+                    *reg += x;
+                    [Some(r), Some(r)]
+                })
             })
-            .filter_map(|(cycle, reg)| (cycle != Cycle::MAX).then_some(reg))
+            .flatten()
+            .flatten()
             .collect()
     }
 }
