@@ -1,26 +1,40 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, ops::ControlFlow};
 
-use aoc::{ProcessInput, PuzzleInput};
+use aoc::PuzzleInput;
 
 type Output = u32;
 
 register!(
     "input/day12.txt";
-    (input: input!(process Input)) -> Output {
+    (input: input!(verbatim Map)) -> Output {
         part1(&input);
         part2(&input);
     }
 );
 
-fn part1(items: &Input) -> Output {
-    items.depth[items.start as usize]
+fn part1(map: &Map) -> Output {
+    let start = map.start;
+    map.bfs(|item| {
+        if item.item == start {
+            ControlFlow::Break(item.dist)
+        } else {
+            ControlFlow::Continue(())
+        }
+    })
+    .unwrap()
 }
 
-fn part2(items: &Input) -> Output {
-    std::iter::zip(&items.tiles, &items.depth)
-        .filter_map(|(&t, &d)| (t == 0).then_some(d))
-        .min()
-        .unwrap()
+fn part2(map: &Map) -> Output {
+    let mut smallest = u32::MAX;
+
+    map.bfs(|item| {
+        if item.dist < smallest && map.tiles[item.item as usize] == 0 {
+            smallest = item.dist;
+        }
+        ControlFlow::<()>::Continue(())
+    });
+
+    smallest
 }
 
 #[derive(Debug)]
@@ -29,6 +43,74 @@ pub struct Map {
     stride: u32,
     start: u32,
     target: u32,
+}
+
+impl Map {
+    fn bfs<T>(&self, mut action: impl FnMut(Item) -> ControlFlow<T>) -> Option<T> {
+        let mut visited = vec![false; self.tiles.len()];
+
+        let mut queue = VecDeque::new();
+
+        visited[self.target as usize] = true;
+        queue.push_back(Item {
+            item: self.target,
+            dist: 0,
+        });
+
+        while let Some(next) = queue.pop_front() {
+            match action(next) {
+                ControlFlow::Break(res) => return Some(res),
+                ControlFlow::Continue(_) => {}
+            }
+
+            self.for_each_in_neighbor(next.item, |neighbor| {
+                if !visited[neighbor as usize] {
+                    visited[neighbor as usize] = true;
+                    queue.push_back(Item {
+                        item: neighbor,
+                        dist: next.dist + 1,
+                    });
+                }
+            });
+        }
+
+        None
+    }
+    fn for_each_in_neighbor(&self, pos: u32, mut action: impl FnMut(u32)) {
+        let x_pos = pos % self.stride;
+        let elevation = self.tiles[pos as usize];
+        let mut call = |pos| {
+            if elevation <= self.tiles[pos as usize] + 1 {
+                action(pos);
+            }
+        };
+
+        // left
+        if x_pos > 0 {
+            call(pos - 1);
+        }
+
+        // up
+        if let Some(up) = pos.checked_sub(self.stride) {
+            call(up);
+        }
+
+        // right
+        if x_pos < self.stride - 1 {
+            call(pos + 1);
+        }
+
+        // down
+        if pos < self.tiles.len() as u32 - self.stride {
+            call(pos + self.stride);
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+struct Item {
+    item: u32,
+    dist: u32,
 }
 
 impl PuzzleInput for Map {
@@ -63,87 +145,6 @@ impl PuzzleInput for Map {
             stride,
             start,
             target,
-        }
-    }
-}
-
-pub struct Input {
-    tiles: Vec<u8>,
-    depth: Vec<u32>,
-    start: u32,
-}
-
-impl ProcessInput for Input {
-    type In = input!(verbatim Map);
-
-    type Out<'a> = Self;
-
-    fn process(input: <Self::In as PuzzleInput>::Out<'_>) -> Self::Out<'_> {
-        fn for_each_in_neighbor(input: &Map, pos: u32, mut action: impl FnMut(u32)) {
-            let x_pos = pos % input.stride;
-            let elevation = input.tiles[pos as usize];
-            let mut call = |pos| {
-                if elevation <= input.tiles[pos as usize] + 1 {
-                    action(pos);
-                }
-            };
-
-            // left
-            if x_pos > 0 {
-                call(pos - 1);
-            }
-
-            // up
-            if let Some(up) = pos.checked_sub(input.stride) {
-                call(up);
-            }
-
-            // right
-            if x_pos < input.stride - 1 {
-                call(pos + 1);
-            }
-
-            // down
-            if pos < input.tiles.len() as u32 - input.stride {
-                call(pos + input.stride);
-            }
-        }
-
-        #[derive(Clone, Debug)]
-        struct Item {
-            item: u32,
-            dist: u32,
-        }
-
-        let mut visited = vec![false; input.tiles.len()];
-        let mut depth = vec![u32::MAX; input.tiles.len()];
-
-        let mut queue = VecDeque::new();
-
-        visited[input.target as usize] = true;
-        queue.push_back(Item {
-            item: input.target,
-            dist: 0,
-        });
-
-        while let Some(next) = queue.pop_front() {
-            depth[next.item as usize] = next.dist;
-
-            for_each_in_neighbor(&input, next.item, |neighbor| {
-                if !visited[neighbor as usize] {
-                    visited[neighbor as usize] = true;
-                    queue.push_back(Item {
-                        item: neighbor,
-                        dist: next.dist + 1,
-                    });
-                }
-            });
-        }
-
-        Self {
-            tiles: input.tiles,
-            depth,
-            start: input.start,
         }
     }
 }
