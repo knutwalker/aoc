@@ -24,8 +24,8 @@ fn part1(items: &[Input]) -> Output {
 
 fn part2(items: &[Input]) -> Output {
     let divider = Input {
-        left: Packet::List(vec![Packet::Int(2)]),
-        right: Packet::List(vec![Packet::Int(6)]),
+        left: Packet::List(&[Packet::Int(2)]),
+        right: Packet::List(&[Packet::Int(6)]),
     };
 
     let packets = items
@@ -47,8 +47,8 @@ fn part2(items: &[Input]) -> Output {
 
 #[derive(Debug, Eq)]
 enum Packet {
-    Int(u32),
-    List(Vec<Self>),
+    Int(u8),
+    List(&'static [Self]),
 }
 
 impl Ord for Packet {
@@ -57,7 +57,7 @@ impl Ord for Packet {
             (Self::Int(lhs), Self::Int(rhs)) => lhs.cmp(rhs),
             (Self::List(lhs), Self::List(rhs)) => lhs.cmp(rhs),
             (lhs @ Self::Int(_), Self::List(rhs)) => from_ref(lhs).cmp(rhs),
-            (Self::List(lhs), rhs @ Self::Int(_)) => lhs.as_slice().cmp(from_ref(rhs)),
+            (Self::List(lhs), rhs @ Self::Int(_)) => (*lhs).cmp(from_ref(rhs)),
         }
     }
 }
@@ -73,8 +73,8 @@ impl PartialEq for Packet {
         match (self, other) {
             (Self::Int(lhs), Self::Int(rhs)) => lhs == rhs,
             (Self::List(lhs), Self::List(rhs)) => lhs == rhs,
-            (lhs @ Self::Int(_), Self::List(rhs)) => from_ref(lhs) == rhs,
-            (Self::List(lhs), rhs @ Self::Int(_)) => lhs.as_slice() == from_ref(rhs),
+            (lhs @ Self::Int(_), Self::List(rhs)) => from_ref(lhs) == *rhs,
+            (Self::List(lhs), rhs @ Self::Int(_)) => *lhs == from_ref(rhs),
         }
     }
 }
@@ -82,7 +82,7 @@ impl PartialEq for Packet {
 impl Packet {
     fn parse(input: &str) -> (Self, &str) {
         input.strip_prefix('[').map_or_else(
-            || match u32::from_radix_10(input.as_bytes()) {
+            || match u8::from_radix_10(input.as_bytes()) {
                 (_, 0) => unreachable!("invalid input: {input}"),
                 (int, used) => (Self::Int(int), &input[used..]),
             },
@@ -90,7 +90,7 @@ impl Packet {
                 let mut list = Vec::new();
                 loop {
                     if let Some(rest) = input.strip_prefix(']') {
-                        break (Self::List(list), rest);
+                        break (Self::List(list.leak()), rest);
                     }
                     let (item, rest) = Self::parse(input);
                     list.push(item);
