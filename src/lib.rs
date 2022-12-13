@@ -113,7 +113,7 @@ where
 
 pub trait Parse {
     type Out<'a>;
-    fn parse_from(s: &str) -> Self::Out<'_>;
+    fn parse_from(input: &str) -> Self::Out<'_>;
 }
 
 impl Parse for [u8] {

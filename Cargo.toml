@@ -9,6 +9,8 @@ publish = false
 default-run = "aoc2022"
 
 [dependencies]
+arrayvec = "0.7.2"
+atoi = "2.0.0"
 bitvec = "1.0.1"
 const-combinations = "2.0.3"
 derive_more = { version = "0.99.17", features = [
