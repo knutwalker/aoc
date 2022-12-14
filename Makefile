@@ -53,6 +53,8 @@ README.md: README.tpl.md aoc2020_bench.md aoc2021_bench.md aoc2022_bench.md
 > @fi
 > touch .cargoinstalled
 
+# Day specific targets
+
 # Download inputs
 
 i%:
@@ -63,3 +65,19 @@ i%:
 d%:
 > m4 -D day=day$* day.rs.tpl > src/bin/$(APP)/day$*.rs
 > code src/bin/$(APP)/day$*.rs
+
+# Run tests
+
+ex%:
+> cargo watch -x 'test --bin $(APP) -- day$*::tests::test_ex --nocapture'
+
+run%:
+> cargo watch -x 'test --bin $(APP) -- day$*::tests::test --exact --nocapture'
+
+t%:
+> cargo watch -x 'test --bin $(APP) -- day$*::tests::test --nocapture'
+
+# Run benchmarks
+
+b%:
+> cargo bench --bin $(APP) day$*::tests::bench
