@@ -72,10 +72,10 @@ ex%:
 > cargo watch -x 'test --bin $(APP) -- day$*::tests::test_ex --nocapture'
 
 run%:
-> cargo watch -x 'test --bin $(APP) -- day$*::tests::test --exact --nocapture'
+> cargo watch -x 'test --release --bin $(APP) -- day$*::tests::test --exact --nocapture'
 
 t%:
-> cargo watch -x 'test --bin $(APP) -- day$*::tests::test --nocapture'
+> cargo watch -x 'test --release --bin $(APP) -- day$*::tests::test --nocapture'
 
 # Run benchmarks
 
