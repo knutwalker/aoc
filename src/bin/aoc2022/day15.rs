@@ -4,51 +4,54 @@ use std::{
     result::Result,
 };
 
-use aoc::Parse;
+use aoc::{Parse, ProcessInput};
 use atoi::FromRadix10Signed;
-use fxhash::FxHashSet;
+use fxhash::{FxHashMap, FxHashSet};
 use tap::Tap;
 
-type Range = RangeInclusive<i64>;
+type Int = i32;
+type UInt = u32;
+type Range = RangeInclusive<Int>;
 type Output = i64;
 
 register!(
     "input/day15.txt";
-    (input: input!(Input)) -> Output {
+    (input: input!(process Input)) -> Output {
         part1(&input);
         part2(&input);
     }
 );
 
-fn part1(items: &[Input]) -> Output {
+fn part1(input: &Input) -> Output {
     fn range_len_because_somehow_exact_iterator_is_not_implemented_for_i64_ranges(
         range: Range,
-    ) -> i64 {
+    ) -> Int {
         range.end() - range.start() + 1
     }
 
-    let target = if items.len() == 14 { 10 } else { 2_000_000 };
+    let target = if input.is_example() { 10 } else { 2_000_000 };
 
-    let covered = Input::all_line_coverages(items, target);
+    let covered = input.all_line_coverages(target);
 
-    let beacons = Input::beacons_in_line(items, target)
+    let beacons = input
+        .beacons_in_line(target)
         .filter(|x| covered.iter().any(|range| range.contains(x)))
-        .collect::<FxHashSet<_>>()
-        .len() as i64;
+        .count() as Int;
 
     covered
         .into_iter()
         .map(range_len_because_somehow_exact_iterator_is_not_implemented_for_i64_ranges)
+        .map(Output::from)
         .sum::<Output>()
-        - beacons
+        - Output::from(beacons)
 }
 
-fn part2(items: &[Input]) -> Output {
-    let max = if items.len() == 14 { 20 } else { 4_000_000 };
+fn part2(input: &Input) -> Output {
+    let max = if input.is_example() { 20 } else { 4_000_000 };
 
     for y in (0..=max).rev() {
-        if let Some(gap) = Input::gap_in_line(items, y, 0..=max) {
-            return gap * 4_000_000 + y;
+        if let Some(gap) = Input::gap_in_line(input, y, 0..=max) {
+            return Output::from(gap) * 4_000_000 + Output::from(y);
         }
     }
 
@@ -56,25 +59,42 @@ fn part2(items: &[Input]) -> Output {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Coord {
-    x: i64,
-    y: i64,
+struct Sensor {
+    x: Int,
+    y: Int,
+    span: UInt,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+impl Sensor {
+    fn coverage_in_line(&self, line: Int) -> Option<Range> {
+        let distance_from_line = self.y.abs_diff(line);
+
+        self.span
+            .checked_sub(distance_from_line)
+            .map(|dist| self.x.saturating_sub_unsigned(dist)..=self.x.saturating_add_unsigned(dist))
+    }
+}
+
 pub struct Input {
-    sensor: Coord,
-    beacon: Coord,
+    sensors: Vec<Sensor>,
+    beacons: FxHashMap<Int, &'static [Int]>,
 }
 
 impl Input {
-    fn beacons_in_line(items: &[Self], line: i64) -> impl Iterator<Item = i64> + '_ {
-        items
-            .iter()
-            .filter_map(move |item| (item.beacon.y == line).then_some(item.beacon.x))
+    fn is_example(&self) -> bool {
+        self.sensors.len() == 14
     }
 
-    fn all_line_coverages(items: &[Self], line: i64) -> Vec<Range> {
+    fn beacons_in_line(&self, line: Int) -> impl Iterator<Item = Int> + '_ {
+        self.beacons
+            .get(&line)
+            .copied()
+            .unwrap_or_default()
+            .iter()
+            .copied()
+    }
+
+    fn all_line_coverages(&self, line: Int) -> Vec<Range> {
         fn merge_range(first: &mut Range, second: Range) -> Option<Range> {
             if first.end() < second.start() {
                 Some(std::mem::replace(first, second))
@@ -86,13 +106,13 @@ impl Input {
             }
         }
 
-        items
+        self.sensors
             .iter()
             .filter_map(|item| item.coverage_in_line(line))
             .collect::<Vec<_>>()
             .tap_mut(|c| c.sort_unstable_by_key(|range| (*range.start(), Reverse(*range.end()))))
             .into_iter()
-            .chain(Some(i64::MAX..=i64::MAX))
+            .chain(Some(Int::MAX..=Int::MAX))
             .scan(None::<Range>, |last, range| {
                 Some({
                     match last {
@@ -105,11 +125,12 @@ impl Input {
             .collect()
     }
 
-    fn gap_in_line(items: &[Self], line: i64, bound: Range) -> Option<i64> {
-        let ranges = items
+    fn gap_in_line(&self, line: Int, bound: Range) -> Option<Int> {
+        let ranges = self
+            .sensors
             .iter()
             .filter_map(|item| item.coverage_in_line(line))
-            .chain(Self::beacons_in_line(items, line).map(|x| x..=x))
+            .chain(self.beacons_in_line(line).map(|x| x..=x))
             .filter(|range| range.start() <= bound.end() && range.end() >= bound.start())
             .collect::<Vec<_>>()
             .tap_mut(|c| c.sort_unstable_by_key(|range| (*range.start(), Reverse(*range.end()))));
@@ -130,44 +151,66 @@ impl Input {
 
         res.break_value().and_then(Result::ok)
     }
+}
 
-    fn signal_span(&self) -> u64 {
-        self.sensor.x.abs_diff(self.beacon.x) + self.sensor.y.abs_diff(self.beacon.y)
-    }
+impl ProcessInput for Input {
+    type In = input!(InputLine);
 
-    fn coverage_in_line(&self, line: i64) -> Option<Range> {
-        let span = self.signal_span();
-        let distance_from_line = self.sensor.y.abs_diff(line);
+    type Out<'a> = Self;
 
-        span.checked_sub(distance_from_line).map(|dist| {
-            self.sensor.x.saturating_sub_unsigned(dist)
-                ..=self.sensor.x.saturating_add_unsigned(dist)
-        })
+    fn process(input: <Self::In as aoc::PuzzleInput>::Out<'_>) -> Self::Out<'_> {
+        let mut beacons = FxHashMap::default();
+        for beacon in &input {
+            beacons
+                .entry(beacon.beacon.1)
+                .or_insert_with(FxHashSet::<Int>::default)
+                .insert(beacon.beacon.0);
+        }
+        let beacons = beacons
+            .into_iter()
+            .map(|(y, xs)| (y, &*xs.into_iter().collect::<Vec<_>>().leak()))
+            .collect();
+
+        let sensors = input
+            .into_iter()
+            .map(|line| Sensor {
+                x: line.sensor.0,
+                y: line.sensor.1,
+                span: line.signal_span(),
+            })
+            .collect();
+
+        Self { sensors, beacons }
     }
 }
 
-impl Parse for Input {
+pub struct InputLine {
+    sensor: (Int, Int),
+    beacon: (Int, Int),
+}
+
+impl InputLine {
+    fn signal_span(&self) -> UInt {
+        self.sensor.0.abs_diff(self.beacon.0) + self.sensor.1.abs_diff(self.beacon.1)
+    }
+}
+
+impl Parse for InputLine {
     type Out<'a> = Self;
 
     fn parse_from(input: &str) -> Self::Out<'_> {
         let input = &input[12..];
-        let (sensor_x, used) = i64::from_radix_10_signed(input.as_bytes());
+        let (sensor_x, used) = Int::from_radix_10_signed(input.as_bytes());
         let input = &input[used + 4..];
-        let (sensor_y, used) = i64::from_radix_10_signed(input.as_bytes());
+        let (sensor_y, used) = Int::from_radix_10_signed(input.as_bytes());
         let input = &input[used + 25..];
-        let (beacon_x, used) = i64::from_radix_10_signed(input.as_bytes());
+        let (beacon_x, used) = Int::from_radix_10_signed(input.as_bytes());
         let input = &input[used + 4..];
-        let (beacon_y, used) = i64::from_radix_10_signed(input.as_bytes());
+        let (beacon_y, used) = Int::from_radix_10_signed(input.as_bytes());
         let input = &input[used..];
         assert!(input.is_empty(), "Unexpected input: {input}");
-        let sensor = Coord {
-            x: sensor_x,
-            y: sensor_y,
-        };
-        let beacon = Coord {
-            x: beacon_x,
-            y: beacon_y,
-        };
+        let sensor = (sensor_x, sensor_y);
+        let beacon = (beacon_x, beacon_y);
         Self { sensor, beacon }
     }
 }
